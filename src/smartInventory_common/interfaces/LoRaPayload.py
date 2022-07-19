@@ -9,7 +9,7 @@ DEVICE_ACTIONS = [
     "STA",  # Student authentication
     "BOR",  # Borrowing
     "INV",  # Inventory Mode
-    "OUT" # Query timed out
+    "OUT", # Query timed out
 ]
 
 
@@ -33,14 +33,17 @@ class LoRaPayload:
 
         self.correlation_id = uuid.uuid4().hex
 
-        self.parse_regex = re.compile("^<(\w+)>(\d{2})(\d?)([A-Z]{0,3})([:_]?)(.*)$")
+        self.parse_regex = re.compile("^<(\w+)>(\d{2})(\d?)([A-Z]{3})([:_]?)(.*)$")
 
     def __str__(self) -> str:
-        if not self.device_id or not self._seq or not self.payload:
-            raise ValueError("Missing mandatory fields")
+        self.check_obj()
 
-        return json.dumps({"device_id": self.device_id, "seq": self.seq, "ttl": self.ttl, "action": self.action,
-                           "payload": self.payload, "timestamp": self.timestamp})
+        return json.dumps(self.get_dict())
+
+    def check_obj(self):
+        print(self.payload, self.action, self._seq)
+        if not self.device_id or not self._seq or (not self.payload and not self.action):
+            raise ValueError("Missing mandatory fields")
 
     @property
     def seq(self):
@@ -93,23 +96,26 @@ class LoRaPayload:
         """
         return 2
 
-    def load_mqtt(self, method_frame: Basic.Deliver, mqtt_payload: bytes):
+    def load_mqtt(self, mqtt_payload: bytes,  method_frame: Basic.Deliver = None, device_id = None):
         """
             Parse payload into an object
         :param method_frame:
         :param mqtt_payload:
         :return: instance
         """
-        payload = f"<{method_frame.routing_key.split('.')[-1]}>{bytes(mqtt_payload).decode('UTF-8')}"
+        if method_frame is None and device_id is None:
+            raise ValueError("'device_id' not found")
+
+        payload = f"<{device_id or method_frame.routing_key.split('.')[-1]}>{bytes(mqtt_payload).decode('UTF-8')}"
 
         tableau = re.split(self.parse_regex, payload)
         if len(tableau) == 8:
             self.device_id = tableau[1]
             self.seq = tableau[2]
             self.ttl = int(tableau[3])
-            self.action = "".join([tableau[i] for i in (4, 5, 6)]) if tableau[5] == "_" else tableau[4]
+            self.action = tableau[4]
             self.payload = tableau[6] if tableau[5] == ":" else ""
-
+        self.check_obj()
         return self
 
     def get_mqtt_string(self) -> bytes:
@@ -147,3 +153,7 @@ class LoRaPayload:
         self.correlation_id = dictionary.get("correlation_id", None)
 
         return self
+
+    def get_dict(self) -> dict:
+        return {"device_id": self.device_id, "seq": self.seq, "ttl": self.ttl, "action": self.action,
+                "payload": self.payload, "timestamp": self.timestamp}
