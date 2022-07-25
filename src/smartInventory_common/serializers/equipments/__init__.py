@@ -2,3 +2,4 @@ from .equipment_model import EquipmentModelSerializer
 from .equipment_attribute import EquipmentAttributeSerializer
 from .equipment_type import EquipmentTypeSerializer
 from .equipment import EquipmentSerializer
+from .equipment_model_cache import EquipmentModelCacheSerializer
