@@ -28,10 +28,12 @@ class LoRaPayload:
         self._seq: int = 0
         self._action: str = ""
         self._ttl: int = 0
+        
         self.payload: str = ""
         self.timestamp: int = int(time.time())
 
         self.correlation_id = uuid.uuid4().hex
+
 
         self.parse_regex = re.compile("^<(\w+)>(\d{2})(\d?)([A-Z]{3})([:_]?)(.*)$")
 
