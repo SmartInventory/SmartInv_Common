@@ -9,7 +9,7 @@ DEVICE_ACTIONS = [
     "STA",  # Student authentication
     "BOR",  # Borrowing
     "INV",  # Inventory Mode
-    "OUT", # Query timed out
+    "OUT",  # Query timed out
 ]
 
 
@@ -28,12 +28,11 @@ class LoRaPayload:
         self._seq: int = 0
         self._action: str = ""
         self._ttl: int = 0
-        
+
         self.payload: str = ""
         self.timestamp: int = int(time.time())
 
         self.correlation_id = uuid.uuid4().hex
-
 
         self.parse_regex = re.compile("^<(\w+)>(\d{2})(\d?)([A-Z]{3})([:_]?)(.*)$")
 
@@ -49,7 +48,7 @@ class LoRaPayload:
 
     @property
     def seq(self):
-        if self.device_id == "000000": # If we are broadcasting
+        if self.device_id == "000000":  # If we are broadcasting
             return "00"
         return self._seq
 
@@ -98,7 +97,7 @@ class LoRaPayload:
         """
         return 2
 
-    def load_mqtt(self, mqtt_payload: bytes,  method_frame: Basic.Deliver = None, device_id = None):
+    def load_mqtt(self, mqtt_payload: bytes, method_frame: Basic.Deliver = None, device_id=None):
         """
             Parse payload into an object
         :param method_frame:
@@ -157,5 +156,11 @@ class LoRaPayload:
         return self
 
     def get_dict(self) -> dict:
-        return {"device_id": self.device_id, "seq": self.seq, "ttl": self.ttl, "action": self.action,
-                "payload": self.payload, "timestamp": self.timestamp}
+        return {
+            "device_id": self.device_id,
+            "seq": self.seq,
+            "ttl": self.ttl,
+            "action": self.action,
+            "payload": self.payload,
+            "timestamp": self.timestamp,
+        }

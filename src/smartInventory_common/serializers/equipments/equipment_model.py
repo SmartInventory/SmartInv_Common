@@ -15,17 +15,11 @@ class EquipmentModelSerializer(serializers.Serializer):
 
     type = EquipmentTypeSerializer(allow_null=True, help_text="Type of the equipment")
 
-    borrow_type = serializers.ChoiceField(
-        choices=BorrowType.choices,
-        default=BorrowType.NONE,
-        allow_null=True
-    )
+    borrow_type = serializers.ChoiceField(choices=BorrowType.choices, default=BorrowType.NONE, allow_null=True)
 
     needs_guarantor = serializers.BooleanField()
 
-    attributes = serializers.ListSerializer(
-        child=EquipmentAttributeSerializer()
-    )
+    attributes = serializers.ListSerializer(child=EquipmentAttributeSerializer())
 
     def create(self, validated_data):
         pass

@@ -16,26 +16,16 @@ class EquipmentModelCacheSerializer(serializers.Serializer):
 
     description = serializers.CharField(max_length=500, allow_null=True)
 
-    borrow_type = serializers.ChoiceField(
-        choices=BorrowType.choices,
-        default=BorrowType.NONE,
-        allow_null=True
-    )
+    borrow_type = serializers.ChoiceField(choices=BorrowType.choices, default=BorrowType.NONE, allow_null=True)
 
     type = serializers.CharField(max_length=200, allow_null=True, allow_blank=True, help_text="Name of the model type")
 
     needs_guarantor = serializers.BooleanField()
 
-    attributes = serializers.ListSerializer(
-        child=EquipmentAttributeSerializer(),
-        allow_null=True,
-        allow_empty=True
-    )
+    attributes = serializers.ListSerializer(child=EquipmentAttributeSerializer(), allow_null=True, allow_empty=True)
 
     def create(self, validated_data):
         pass
 
     def update(self, instance, validated_data):
         pass
-
-
