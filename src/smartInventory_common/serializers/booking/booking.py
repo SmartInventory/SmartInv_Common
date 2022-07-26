@@ -1,3 +1,4 @@
+
 from rest_framework import serializers
 
 
@@ -12,7 +13,7 @@ class BookingSerializer(serializers.Serializer):
 
     borrower_id = serializers.UUIDField()
 
-    equipment_id = serializers.UUIDField()
+    physical_id = serializers.CharField(max_length=255)
 
     def update(self, instance, validated_data):
         pass
