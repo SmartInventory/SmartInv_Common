@@ -5,7 +5,7 @@ from .equipment_model import EquipmentModelSerializer
 
 
 class EquipmentSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(read_only=True)
     model_id = serializers.UUIDField(required=True)
     physical_id = serializers.CharField(max_length=255, required=True)
 
