@@ -32,7 +32,7 @@ class RequestsBackend:
             return serializer
 
         print("MISS")
-        response = self._get(component_id)
+        response = self.get(component_id)
         if response.status_code == 200:
             serializer = self.serializer(data=response.json())
             if serializer.is_valid():
@@ -41,10 +41,14 @@ class RequestsBackend:
         else:
             return self.handle_error(response)
 
-    def _get(self, path: str):
+    def get(self, path: str):
+        if path:
+            url = self.service_url + "/api" + self.route + "/" + path + "/?format=json"
+        else:
+            url = self.service_url + "/api" + self.route + "/?format=json"
         return requests.request(
             "GET",
-            self.service_url + "/api" + self.route + "/" + path + "/?format=json",
+            url,
             headers={"Accept": "application/json"},
         )
 
