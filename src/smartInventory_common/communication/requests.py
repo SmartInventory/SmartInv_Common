@@ -5,6 +5,8 @@ import requests
 from django.core.cache import cache
 from requests import Response
 
+from rest_framework import serializers
+
 
 @dataclass
 class RequestsBackend:
@@ -55,9 +57,9 @@ class RequestsBackend:
     @staticmethod
     def handle_error(response: Response):
         try:
-            raise ValueError(response.json())
+            raise serializers.ValidationError(response.json())
         except TypeError:
-            raise ValueError(response.content)
+            raise serializers.ValidationError(response.content)
 
     def get_component_model(self, component_id) -> any:
         """
