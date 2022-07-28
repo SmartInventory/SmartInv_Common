@@ -8,7 +8,7 @@ class InspectionCommentSerializer(serializers.Serializer):
 
     inspection = serializers.UUIDField()
 
-    user = serializers.UUIDField()
+    user = serializers.UUIDField(read_only=True)
 
     timestamp = serializers.DateTimeField(read_only=True)
 
