@@ -40,8 +40,7 @@ class RequestsBackend:
             if serializer.is_valid():
                 cache.set(f"{self.route}_{component_id}", response.text)
                 return serializer
-        else:
-            return self.handle_error(response)
+        return self.handle_error(response)
 
     def get(self, path: str):
         if path:
@@ -58,7 +57,7 @@ class RequestsBackend:
     def handle_error(response: Response):
         try:
             raise serializers.ValidationError(response.json())
-        except TypeError:
+        except (TypeError, requests.exceptions.JSONDecodeError):
             raise serializers.ValidationError(response.content)
 
     def get_component_model(self, component_id) -> any:
