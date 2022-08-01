@@ -9,7 +9,7 @@ class CouchDBAttributes:
     def format_attributes(attributes) -> dict:
         formatted_attributes = {}
         for attribute in attributes:
-            if "attributes_id" in attribute:
+            if "attribute_id" in attribute:
                 formatted_attributes[attribute["attribute_id"].name] = attribute["value"]
             else:
                 formatted_attributes[attribute["name"]] = attribute["value"]

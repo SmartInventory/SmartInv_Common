@@ -5,7 +5,7 @@ from smartInventory_common.utils import BorrowType
 
 
 class EquipmentModelSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(read_only=True)
     reference = serializers.CharField(max_length=200, allow_blank=True)
     quantity = serializers.ReadOnlyField(allow_null=True)
     name = serializers.CharField(max_length=200)

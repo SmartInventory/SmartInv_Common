@@ -21,6 +21,7 @@ class PublishEvents:
         self.channel = self.connection.channel()
 
     def send_packet(self, data: dict):
+        self.init_connexion()
         json_dump = json.dumps(data)
 
         self.channel.basic_publish(
