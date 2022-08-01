@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from .equipment_attribute import EquipmentAttributeValueSerializer
 from smartInventory_common.utils import BorrowType
 
 
@@ -15,7 +16,9 @@ class EquipmentModelSerializer(serializers.Serializer):
 
     needs_guarantor = serializers.BooleanField()
 
-    attributes_id = serializers.CharField(max_length=255, required=False, read_only=True)
+    attributes_id = serializers.CharField(max_length=255, required=False)
+
+    attributes = EquipmentAttributeValueSerializer(required=False, many=True)
 
     def create(self, validated_data):
         pass

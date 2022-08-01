@@ -25,11 +25,7 @@ def custom_exception_handler(exc, context):
         if isinstance(exc.detail, (list, dict)):
             data = exc.detail
 
-    formatted_error = {
-        "error": error or "error.system.unknown",
-        "detail": data,
-        "status_code": status_code
-    }
+    formatted_error = {"error": error or "error.system.unknown", "detail": data, "status_code": status_code}
 
     set_rollback()
 

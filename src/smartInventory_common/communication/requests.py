@@ -1,5 +1,4 @@
 import json
-from dataclasses import dataclass
 
 import requests
 from django.core.cache import cache
@@ -8,7 +7,6 @@ from requests import Response
 from rest_framework import serializers
 
 
-@dataclass
 class RequestsBackend:
     route = None
     serializer = None
@@ -18,35 +16,37 @@ class RequestsBackend:
         if not self.serializer or not self.route or not self.service_url:
             raise NotImplementedError
 
-    def get_cache_or_live(self, component_id):
+    @classmethod
+    def get_cache_or_live(cls, component_id):
         """
         Get from cache or from backend
         :param component_id:
         :return:
         """
 
-        cache_comp = cache.get(f"{self.route}_{component_id}")
+        cache_comp = cache.get(f"{cls.route}_{component_id}")
 
         if cache_comp:
             print("HIT¡")
-            serializer = self.serializer(data=json.loads(cache_comp))
+            serializer = cls.serializer(data=json.loads(cache_comp))
             serializer.is_valid(raise_exception=True)
             return serializer
 
         print("MISS")
-        response = self.get(component_id)
+        response = cls.get(component_id)
         if response.status_code == 200:
-            serializer = self.serializer(data=response.json())
+            serializer = cls.serializer(data=response.json())
             if serializer.is_valid():
-                cache.set(f"{self.route}_{component_id}", response.text)
+                cache.set(f"{cls.route}_{component_id}", response.text)
                 return serializer
-        return self.handle_error(response)
+        return cls.handle_error(response)
 
-    def get(self, path: str):
+    @classmethod
+    def get(cls, path: str):
         if path:
-            url = self.service_url + "/api" + self.route + "/" + path + "/?format=json"
+            url = cls.service_url + "/api" + cls.route + "/" + path + "/?format=json"
         else:
-            url = self.service_url + "/api" + self.route + "/?format=json"
+            url = cls.service_url + "/api" + cls.route + "/?format=json"
         return requests.request(
             "GET",
             url,
@@ -60,19 +60,21 @@ class RequestsBackend:
         except (TypeError, requests.exceptions.JSONDecodeError):
             raise serializers.ValidationError(response.content)
 
-    def get_component_model(self, component_id) -> any:
+    @classmethod
+    def get_component_model(cls, component_id) -> any:
         """
             Get component model from backend
         :param component_id:
         :return:
         """
 
-        serializer = self.get_cache_or_live(component_id)
+        serializer = cls.get_cache_or_live(component_id)
         if serializer.is_valid(raise_exception=True):
             return serializer
         raise ValueError(serializer.errors)
 
-    def post_data(self, data, path=None, method="POST") -> Response:
+    @classmethod
+    def post_data(cls, data, path=None, method="POST") -> Response:
         """
         Send data
         :param path:
@@ -81,8 +83,8 @@ class RequestsBackend:
         :return:
         """
         if path:
-            url = self.service_url + "/api" + self.route + "/" + path + "/"
+            url = cls.service_url + "/api" + cls.route + "/" + path + "/"
         else:
-            url = self.service_url + "/api" + self.route + "/"
+            url = cls.service_url + "/api" + cls.route + "/"
 
         return requests.request(method, url, headers={"Accept": "application/json"}, data=data)
