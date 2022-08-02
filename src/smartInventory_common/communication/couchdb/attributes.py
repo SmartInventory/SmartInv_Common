@@ -1,9 +1,12 @@
-from django.conf import settings
+from smartInventory_common.communication.couchdb import CouchDB
 from smartInventory_common.utils.exceptions import AttributesNotFound, CouchDBSendError
 
 
-class CouchDBAttributes:
-    queryset = None
+class CouchDBAttributes(CouchDB):
+
+    def __init__(self, parameters: dict, queryset=None):
+        super(CouchDBAttributes, self).__init__(parameters)
+        self.queryset = queryset
 
     @staticmethod
     def format_attributes(attributes) -> dict:
@@ -16,66 +19,60 @@ class CouchDBAttributes:
 
         return formatted_attributes
 
-    @classmethod
-    def create_attributes(cls, attributes):
+    def create_attributes(self, attributes):
         # Create instance attributes
-        formatted_attributes = cls.format_attributes(attributes)
-        response, status_code = settings.COUCHDB_CONNECTION.send_data("POST", "", formatted_attributes)
+        formatted_attributes = self.format_attributes(attributes)
+        response, status_code = self.send_data("POST", "", formatted_attributes)
 
         if status_code != 201:
             print("Error Couchdb : ", response)
             raise CouchDBSendError(detail=response)
         return response["id"]
 
-    @classmethod
-    def get_document(cls, document_id):
-        response, status_code = settings.COUCHDB_CONNECTION.request("GET", document_id)
+    def get_document(self, document_id):
+        response, status_code = self.request("GET", document_id)
         if status_code != 200:
             print("error couchdb", response)
             raise AttributesNotFound(detail=response)
         return response
 
-    @classmethod
-    def format_attributes_array(cls, attributes: dict):
+    def format_attributes_array(self, attributes: dict):
         formatted_array = []
 
         for key, value in attributes.items():
             if key in ["_id", "_rev"]:
                 """Internal fields"""
                 continue
-            if cls.queryset is None:
+            if self.queryset is None:
                 formatted_array.append({"name": key, "value": value})
             else:
-                attribute = cls.queryset.objects.get(name=key)
+                attribute = self.queryset.objects.get(name=key)
 
                 formatted_array.append({"id": attribute, "name": key, "value": value})
 
         return formatted_array
 
-    @classmethod
-    def get_attributes(cls, attributes_id):
+    def get_attributes(self, attributes_id):
         if not attributes_id:
             return []
-        attributes = cls.get_document(attributes_id)
-        return cls.format_attributes_array(attributes)
+        attributes = self.get_document(attributes_id)
+        return self.format_attributes_array(attributes)
 
-    @classmethod
-    def delete_attributes(cls, attributes_id):
-        attributes = cls.get_document(attributes_id)
+    def delete_attributes(self, attributes_id):
+        attributes = self.get_document(attributes_id)
 
-        response, status_code = settings.COUCHDB_CONNECTION.request(
+        response, status_code = self.request(
             "DELETE", attributes_id + "?rev=" + attributes["_rev"]
         )
         if status_code != 200 and status_code != 202:
             print("Error Couchdb : ", response)
             raise CouchDBSendError(detail=response)
 
-    @classmethod
-    def update_attribute(cls, attributes_id, attributes):
-        formatted_attributes = cls.format_attributes(attributes)
-        attributes = cls.get_document(attributes_id)
+    def update_attribute(self, attributes_id, attributes):
+        formatted_attributes = self.format_attributes(attributes)
+        attributes = self.get_document(attributes_id)
 
-        response, status_code = settings.COUCHDB_CONNECTION.send_data(
+        response, status_code = self.send_data(
             "PUT", attributes_id + "?rev=" + attributes["_rev"], formatted_attributes
         )
 
