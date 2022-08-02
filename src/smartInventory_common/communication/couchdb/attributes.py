@@ -9,10 +9,11 @@ class CouchDBAttributes:
     def format_attributes(attributes) -> dict:
         formatted_attributes = {}
         for attribute in attributes:
-            if "attribute_id" in attribute:
-                formatted_attributes[attribute["attribute_id"].name] = attribute["value"]
-            else:
+            if "name" in attribute:
                 formatted_attributes[attribute["name"]] = attribute["value"]
+            else:
+                formatted_attributes[attribute["id"].name] = attribute["value"]
+
         return formatted_attributes
 
     @classmethod
@@ -47,7 +48,7 @@ class CouchDBAttributes:
             else:
                 attribute = cls.queryset.objects.get(name=key)
 
-                formatted_array.append({"attribute_id": attribute, "name": key, "value": value})
+                formatted_array.append({"id": attribute, "name": key, "value": value})
 
         return formatted_array
 

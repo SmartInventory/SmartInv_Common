@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from smartInventory_common.utils import USER_ROLES
+from smartInventory_common.utils.users import USER_ROLES
 
 
 class UserSerializer(serializers.Serializer):

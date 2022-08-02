@@ -1,6 +1,8 @@
 import json
+import uuid
 
 import requests
+from django.conf import settings
 from django.core.cache import cache
 from requests import Response
 
@@ -31,6 +33,43 @@ class RequestsBackend:
             serializer = cls.serializer(data=json.loads(cache_comp))
             serializer.is_valid(raise_exception=True)
             return serializer
+
+        if settings.TESTING:
+            print("TESTING")
+            if component_id == "7a35a50b-bb76-432d-8c62-5b7ea1ad0af8":
+                raise serializers.ValidationError({"error": "error.equipment_model.not_found"})
+            if component_id == "350efcc4-62a5-4c09-81cc-e5af4366c705":
+                raise serializers.ValidationError({"error": "error.equipment_attribute.not_found"})
+            if cls.route == "/equipment_model":
+                fake_data = {
+                    "id": str(component_id),
+                    "reference": "28bc52f7f13e4bbf841d8729141267f3",
+                    "quantity": 0,
+                    "name": "Cisco 2900 series",
+                    "description": "A Cisco 2900 series router",
+                    "borrow_type": "IL",
+                    "needs_guarantor": True,
+                    "attributes":
+                        [
+                            {
+                                "id": "3afbd088-3076-4edf-b36e-0e175dd9d752",
+                                "value": "2009"
+                            }
+                        ],
+                    "attributes_id": "4f5fb3b57c5263054ecab57c88035a12"
+                }
+                serializer = cls.serializer(data=fake_data)
+                serializer.is_valid(raise_exception=True)
+                return serializer
+            elif cls.route == "/equipment_attribute":
+                fake_data = {
+                    "id": str(component_id),
+                    "name": "ATTR" + str(uuid.uuid4())[4:],
+                    "description": ""
+                }
+                serializer = cls.serializer(data=fake_data)
+                serializer.is_valid(raise_exception=True)
+                return serializer
 
         print("MISS")
         response = cls.get(component_id)

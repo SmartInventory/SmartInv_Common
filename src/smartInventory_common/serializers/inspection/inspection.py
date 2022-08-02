@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from smartInventory_common.serializers.utils.validators import no_past
-from smartInventory_common.utils import InspectionType
+from smartInventory_common.utils.inspection import InspectionType
 
 
 class InspectionSerializer(serializers.Serializer):
