@@ -34,7 +34,7 @@ class RequestsBackend:
 
         if cache_comp:
             print("HIT¡")
-            serializer = cls.serializer(data=json.loads(cache_comp))
+            serializer = cls.serializer(data=json.loads(cache_comp), many="?" in component_id)
             serializer.is_valid(raise_exception=True)
             return serializer
 
@@ -69,15 +69,21 @@ class RequestsBackend:
         print("MISS")
         response = cls.get(component_id)
         if response.status_code == 200:
-            serializer = cls.serializer(data=response.json())
+            if "?" in component_id:
+                """If its a search"""
+                serializer = cls.serializer(data=response.json()["results"], many=True)
+            else:
+                serializer = cls.serializer(data=response.json())
             if serializer.is_valid():
-                cache.set(f"{cls.route}_{component_id}", response.text)
+                cache.set(f"{cls.route}_{component_id}", json.dumps(serializer.data))
                 return serializer
         return cls.handle_error(response)
 
     @classmethod
     def get(cls, path: str):
-        if path:
+        if "?" in path:
+            url = cls.service_url + "/api" + cls.route + "/" + path
+        elif path:
             url = cls.service_url + "/api" + cls.route + "/" + path + "/?format=json"
         else:
             url = cls.service_url + "/api" + cls.route + "/?format=json"

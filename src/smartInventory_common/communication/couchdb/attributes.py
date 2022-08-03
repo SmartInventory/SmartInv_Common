@@ -78,3 +78,18 @@ class CouchDBAttributes(CouchDB):
             raise CouchDBSendError(detail=response)
 
         return response["id"]
+
+    def find_attribute(self, key, value=None):
+        if value:
+            search_query = {"selector": {key: {"$eq": value}}}
+        else:
+            search_query = {"selector": {key: {"$exists": True}}}
+
+        response, status_code = self.send_data("POST", "_find", search_query)
+
+        if status_code != 200:
+            print("Error Couchdb : ", response)
+            if status_code == 404:
+                return None
+            raise CouchDBSendError(detail=response)
+        return response
