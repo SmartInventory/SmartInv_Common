@@ -11,9 +11,7 @@ class InspectionSerializer(serializers.Serializer):
 
     end_date = serializers.DateTimeField(required=False, allow_null=True, validators=[no_past])
 
-    inspection_type = serializers.ChoiceField(
-        read_only=True, choices=InspectionType.choices, default=InspectionType.REVISION
-    )
+    inspection_type = serializers.ChoiceField(choices=InspectionType.choices, default=InspectionType.REVISION)
 
     equipment = serializers.UUIDField(read_only=True)
 

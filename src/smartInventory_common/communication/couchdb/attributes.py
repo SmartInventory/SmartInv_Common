@@ -3,7 +3,6 @@ from smartInventory_common.utils.exceptions import AttributesNotFound, CouchDBSe
 
 
 class CouchDBAttributes(CouchDB):
-
     def __init__(self, parameters: dict, queryset=None):
         super(CouchDBAttributes, self).__init__(parameters)
         self.queryset = queryset
@@ -61,9 +60,7 @@ class CouchDBAttributes(CouchDB):
     def delete_attributes(self, attributes_id):
         attributes = self.get_document(attributes_id)
 
-        response, status_code = self.request(
-            "DELETE", attributes_id + "?rev=" + attributes["_rev"]
-        )
+        response, status_code = self.request("DELETE", attributes_id + "?rev=" + attributes["_rev"])
         if status_code != 200 and status_code != 202:
             print("Error Couchdb : ", response)
             raise CouchDBSendError(detail=response)

@@ -14,7 +14,7 @@ class EquipmentAttributeSerializer(serializers.Serializer):
 
 
 class EquipmentAttributeValueSerializer(serializers.Serializer):
-    id = serializers.UUIDField(write_only=True, required=False)
+    id = serializers.UUIDField(required=False)
 
     name = serializers.CharField(max_length=255, required=False)
     value = serializers.CharField(max_length=255)
@@ -29,4 +29,3 @@ class EquipmentAttributeValueSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         pass
-

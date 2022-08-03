@@ -12,6 +12,8 @@ class InspectionCommentSerializer(serializers.Serializer):
 
     timestamp = serializers.DateTimeField(read_only=True)
 
+    edited = serializers.BooleanField(read_only=True)
+
     def update(self, instance, validated_data):
         pass
 

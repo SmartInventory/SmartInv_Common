@@ -1,12 +1,16 @@
 import json
-import uuid
-
 import requests
 from django.conf import settings
 from django.core.cache import cache
 from requests import Response
 
 from rest_framework import serializers
+
+BACKEND_REQ_TEST_VARIABLES = {
+    "model_id_not_found": "7a35a50b-bb76-432d-8c62-5b7ea1ad0af8",
+    "attribute_id_not_found": "350efcc4-62a5-4c09-81cc-e5af4366c705",
+    "model_id_wo_attrs": "e2340d6c-622a-41ae-8939-a53c79a1bed0",
+}
 
 
 class RequestsBackend:
@@ -35,10 +39,9 @@ class RequestsBackend:
             return serializer
 
         if settings.TESTING:
-            print("TESTING")
-            if component_id == "7a35a50b-bb76-432d-8c62-5b7ea1ad0af8":
+            if component_id == BACKEND_REQ_TEST_VARIABLES["model_id_not_found"]:
                 raise serializers.ValidationError({"error": "error.equipment_model.not_found"})
-            if component_id == "350efcc4-62a5-4c09-81cc-e5af4366c705":
+            if component_id == BACKEND_REQ_TEST_VARIABLES["attribute_id_not_found"]:
                 raise serializers.ValidationError({"error": "error.equipment_attribute.not_found"})
             if cls.route == "/equipment_model":
                 fake_data = {
@@ -49,24 +52,16 @@ class RequestsBackend:
                     "description": "A Cisco 2900 series router",
                     "borrow_type": "IL",
                     "needs_guarantor": True,
-                    "attributes":
-                        [
-                            {
-                                "id": "3afbd088-3076-4edf-b36e-0e175dd9d752",
-                                "value": "2009"
-                            }
-                        ],
-                    "attributes_id": "4f5fb3b57c5263054ecab57c88035a12"
+                    "attributes": [{"id": "3afbd088-3076-4edf-b36e-0e175dd9d752", "value": "2009"}],
+                    "attributes_id": "4f5fb3b57c5263054ecab57c88035a12",
                 }
+                if component_id == BACKEND_REQ_TEST_VARIABLES["model_id_wo_attrs"]:
+                    fake_data["attributes"] = []
                 serializer = cls.serializer(data=fake_data)
                 serializer.is_valid(raise_exception=True)
                 return serializer
             elif cls.route == "/equipment_attribute":
-                fake_data = {
-                    "id": str(component_id),
-                    "name": "ATTR" + str(uuid.uuid4())[4:],
-                    "description": ""
-                }
+                fake_data = {"id": str(component_id), "name": "ATTR" + str(component_id), "description": ""}
                 serializer = cls.serializer(data=fake_data)
                 serializer.is_valid(raise_exception=True)
                 return serializer

@@ -1,6 +1,6 @@
 from django.http import Http404
 from django.core.exceptions import PermissionDenied
-from rest_framework import exceptions, status
+from rest_framework import exceptions, status, serializers
 from rest_framework.views import set_rollback, Response
 
 
@@ -12,6 +12,13 @@ def custom_exception_handler(exc, context):
         error = f"error.{context['view'].basename}."
         if exc:
             error = error + str(type(exc).__name__).lower()
+
+            if isinstance(exc, serializers.ValidationError):
+                if "error" in exc.detail and len(exc.detail["error"]):
+                    if isinstance(exc.detail["error"], str):
+                        error = exc.detail["error"]
+                    elif isinstance(exc.detail["error"], list):
+                        error = exc.detail["error"][0]
             status_code = status.HTTP_400_BAD_REQUEST
             data = str(exc)
         else:
