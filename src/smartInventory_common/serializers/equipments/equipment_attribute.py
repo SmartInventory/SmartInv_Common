@@ -2,7 +2,6 @@ from rest_framework import serializers
 
 
 class EquipmentAttributeSerializer(serializers.Serializer):
-    id = serializers.UUIDField()
     name = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=500, required=False, allow_blank=True)
 
@@ -14,15 +13,8 @@ class EquipmentAttributeSerializer(serializers.Serializer):
 
 
 class EquipmentAttributeValueSerializer(serializers.Serializer):
-    id = serializers.UUIDField(required=False)
-
-    name = serializers.CharField(max_length=255, required=False)
+    name = serializers.CharField(max_length=255)
     value = serializers.CharField(max_length=255)
-
-    def validate(self, attrs):
-        if not attrs.get("id") and not attrs.get("name"):
-            raise serializers.ValidationError("specify id or name")
-        return super(EquipmentAttributeValueSerializer, self).validate(attrs)
 
     def update(self, instance, validated_data):
         pass

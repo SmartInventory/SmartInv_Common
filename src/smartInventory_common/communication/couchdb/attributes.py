@@ -11,10 +11,10 @@ class CouchDBAttributes(CouchDB):
     def format_attributes(attributes) -> dict:
         formatted_attributes = {}
         for attribute in attributes:
-            if "name" in attribute:
+            if isinstance(attribute["name"], str):
                 formatted_attributes[attribute["name"]] = attribute["value"]
             else:
-                formatted_attributes[attribute["id"].name] = attribute["value"]
+                formatted_attributes[attribute["name"].name] = attribute["value"]
 
         return formatted_attributes
 
