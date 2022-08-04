@@ -70,12 +70,12 @@ class RequestsBackend:
 
         if cache_comp:
             print("HIT¡")
-            serializer = cls.serializer(data=json.loads(cache_comp))
+            serializer = cls.serializer(data=json.loads(cache_comp), many=search)
             serializer.is_valid(raise_exception=True)
             return serializer
 
         print("MISS")
-        response = cls.get(component_id)
+        response = cls.get(component_id, search)
         if response.status_code == 200:
             if search:
                 """If its a search"""
