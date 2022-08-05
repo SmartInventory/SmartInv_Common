@@ -1,5 +1,23 @@
 version: "3.9"  # optional since v1.27.0
 services:
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./app_nginx.conf:/etc/nginx/sites-enabled/app.conf:ro
+    networks:
+      - app
+    depends_on:
+      - backoffice
+      - inventory
+
+  redis_bo:
+    image: redis:7
+    networks:
+      - app
+
   backoffice:
     build: ./Smart-Inventory-BO-back/
     ports:
@@ -11,6 +29,15 @@ services:
         condition: service_healthy
       couchdb:
         condition: service_started
+      rabbit_mq:
+        condition: service_started
+      redis_bo:
+        condition: service_started
+    networks:
+      - app
+
+  redis_inv:
+    image: redis:7
     networks:
       - app
 
@@ -24,6 +51,10 @@ services:
       postgres_inv:
         condition: service_healthy
       couchdb:
+        condition: service_started
+      rabbit_mq:
+        condition: service_started
+      redis_inv:
         condition: service_started
     networks:
       - app

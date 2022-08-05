@@ -81,7 +81,7 @@ class CouchDBAttributes(CouchDB):
 
     def find_attribute(self, key, value=None):
         if value:
-            search_query = {"selector": {key: {"$eq": value}}}
+            search_query = {"selector": {key: {"$regex": "(?i)" + value}}}
         else:
             search_query = {"selector": {key: {"$exists": True}}}
 

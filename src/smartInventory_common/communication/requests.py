@@ -1,3 +1,4 @@
+import hashlib
 import json
 import requests
 from django.conf import settings
@@ -25,7 +26,7 @@ class RequestsBackend:
 
     @staticmethod
     def get_cache_key(route, component_id):
-        return str(hash(f"{route}_{component_id}"))
+        return hashlib.md5(str(f"{route}_{component_id}").encode("UTF-8")).hexdigest()
 
     @classmethod
     def get_test_datas(cls, component_id, search=False):
@@ -70,7 +71,9 @@ class RequestsBackend:
 
         if cache_comp:
             print("HIT¡")
-            serializer = cls.serializer(data=json.loads(cache_comp), many=search)
+            serializer = cls.serializer(
+                data=cache_comp if isinstance(cache_comp, dict) else json.loads(cache_comp), many=search
+            )
             serializer.is_valid(raise_exception=True)
             return serializer
 
@@ -100,6 +103,10 @@ class RequestsBackend:
             url,
             headers={"Accept": "application/json"},
         )
+
+    @classmethod
+    def remove_cache(cls, component_id):
+        cache.delete(cls.get_cache_key(cls.route, component_id))
 
     @staticmethod
     def handle_error(response: Response):
