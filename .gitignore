@@ -4,3 +4,4 @@ venv/
 **/__pycache__/
 dist/
 *.egg-info/
+/infra/k8s/secrets/

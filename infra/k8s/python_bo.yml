@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bo-backend
+  labels:
+    app: smartinventory
+spec:
+  ports:
+    - port: 8000
+  selector:
+    app: smartinventory
+    tier: bo-backend
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bo-backend
+  labels:
+    app: smartinventory
+spec:
+  selector:
+    matchLabels:
+      app: smartinventory
+      tier: bo-backend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: smartinventory
+        tier: bo-backend
+    spec:
+      containers:
+        - image: smartinventory_backoffice:preprod
+          name: bo-backend
+          ports:
+            - containerPort: 8000
+              name: bo-backend
+          volumeMounts:
+            - name: bo-config-vol
+              readOnly: true
+              mountPath: "/app/back_office_back/secret/"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/back_office_back/secret/bo_config.ini /app/back_office_back/configuration.ini
+      volumes:
+        - name: bo-config-vol
+          secret:
+            secretName: bo-config
