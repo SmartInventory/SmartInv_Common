@@ -7,6 +7,6 @@ class JobStatus(models.TextChoices):
 
     ONGOING = "ONG", _("Ongoing")
     STUCK = "STU", _("Stuck")
-    COMPLETED = "COM", _("Completed")
+    COMPLETED = "OK", _("Completed")
     SENT = "SEN", _("Sent")
     FAILED = "FAI", _("Failed")

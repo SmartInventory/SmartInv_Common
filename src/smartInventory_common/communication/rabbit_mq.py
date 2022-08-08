@@ -19,8 +19,10 @@ class EventsHandler:
         self.channel = None
 
     def init_connexion(self):
+        print("Init connexion to RabbitMQ queue : %s..." % self.queue_name, end="")
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
+        print("Success!")
 
     def send_cache_update(self, action, comp_type=None, comp_id=None, data=None):
         formatted_data = {"action": action, "id": str(comp_id), "type": comp_type, "payload": data}
@@ -42,6 +44,7 @@ class EventsHandler:
             return
         self.init_connexion()
         json_dump = json.dumps(data)
+        print("Sending :", json_dump)
 
         self.channel.basic_publish(
             self.exchange,

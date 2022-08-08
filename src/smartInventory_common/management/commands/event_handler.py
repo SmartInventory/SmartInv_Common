@@ -19,7 +19,6 @@ class ListenEvents(BaseCommand):
         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
         if "action" in data:
-            print(data)
             if data["action"] == "PURGE":
                 print("purge cache")
                 cache.clear()

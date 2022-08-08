@@ -6,7 +6,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./app_nginx.conf:/etc/nginx/sites-enabled/app.conf:ro
+      - ./app_nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
       - app
     depends_on:
