@@ -9,7 +9,7 @@ class InspectionSerializer(serializers.Serializer):
 
     start_date = serializers.DateTimeField(read_only=True)
 
-    end_date = serializers.DateTimeField(required=False, allow_null=True, validators=[no_past])
+    end_date = serializers.DateTimeField(required=False, allow_null=True, validators=[no_past], read_only=True)
 
     inspection_type = serializers.ChoiceField(choices=InspectionType.choices, default=InspectionType.REVISION)
 
