@@ -1,4 +1,5 @@
 import json
+import sys
 from django.conf import settings
 
 import pika
@@ -19,10 +20,10 @@ class EventsHandler:
         self.channel = None
 
     def init_connexion(self):
-        print("Init connexion to RabbitMQ queue : %s..." % self.queue_name, end="")
+        sys.stdout.write("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
-        print("Success!")
+        sys.stdout.write("Success!\n")
 
     def send_cache_update(self, action, comp_type=None, comp_id=None, data=None):
         formatted_data = {"action": action, "id": str(comp_id), "type": comp_type, "payload": data}
@@ -30,7 +31,7 @@ class EventsHandler:
         try:
             self.send_packet(formatted_data)
         except AMQPConnectionError:
-            print("error cache rabbitmq")
+            sys.stdout.write("error cache rabbitmq\n")
 
     def create_job(self, action, data):
         raise NotImplemented
@@ -44,7 +45,7 @@ class EventsHandler:
             return
         self.init_connexion()
         json_dump = json.dumps(data)
-        print("Sending :", json_dump)
+        sys.stdout.write("Sending : %s\n" % json_dump)
 
         self.channel.basic_publish(
             self.exchange,
@@ -61,7 +62,7 @@ class EventsHandler:
         self.channel.basic_consume(self.queue_name, callback, auto_ack=False)
 
         try:
-            print("Listening for events on %s..." % self.queue_name)
+            sys.stdout.write("Listening for events on %s...\n" % self.queue_name)
             self.channel.start_consuming()
         except KeyboardInterrupt:
             self.channel.stop_consuming()

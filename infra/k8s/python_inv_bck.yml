@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inv-backend-bck
+  labels:
+    app: smartinventory
+spec:
+  selector:
+    matchLabels:
+      app: smartinventory
+      tier: inv-backend-bck
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: smartinventory
+        tier: inv-backend-bck
+    spec:
+      containers:
+        - image: smartinventory_inventory:preprod
+          name: inv-backend-bck
+          ports:
+            - containerPort: 8000
+              name: inv-backend-bck
+          volumeMounts:
+            - name: inv-config-vol
+              readOnly: true
+              mountPath: "/app/smartinv_back/secret/"
+          command:
+            - "python"
+            - "manage.py"
+            - "event_handler"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+      volumes:
+        - name: inv-config-vol
+          secret:
+            secretName: inv-config
