@@ -113,6 +113,7 @@ services:
       - "15692:15692"
     volumes:
       - mqdata:/var/lib/rabbitmq:rw
+      - mqconf:/etc/rabbitmq:rw
       - ./SmartInv_EventHandler/rabbit_mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
     networks:
       - app
@@ -143,4 +144,5 @@ volumes:
   backoffice_psql: {}
   inventory_psql: {}
   mqdata: {}
+  mqconf: {}
   couchdb_data: {}
