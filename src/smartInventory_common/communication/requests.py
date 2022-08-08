@@ -12,6 +12,7 @@ BACKEND_REQ_TEST_VARIABLES = {
     "attribute_id_not_found": "350efcc4-62a5-4c09-81cc-e5af4366c705",
     "model_id_wo_attrs": "e2340d6c-622a-41ae-8939-a53c79a1bed0",
     "attribute_supervalue": "supervalue",
+    "lab_not_found": "56746edd-eefa-4a4c-a68c-83369aed81f9",
 }
 
 
@@ -32,9 +33,11 @@ class RequestsBackend:
     def get_test_datas(cls, component_id, search=False):
         if component_id == BACKEND_REQ_TEST_VARIABLES["model_id_not_found"]:
             raise serializers.ValidationError({"error": "error.equipment_model.not_found"})
-        if component_id == BACKEND_REQ_TEST_VARIABLES["attribute_id_not_found"]:
+        elif component_id == BACKEND_REQ_TEST_VARIABLES["attribute_id_not_found"]:
             raise serializers.ValidationError({"error": "error.equipment_attribute.not_found"})
-        if cls.route == "/equipment_model":
+        elif component_id == BACKEND_REQ_TEST_VARIABLES["lab_not_found"]:
+            raise serializers.ValidationError({"error": "error.laboratory.not_found"})
+        elif cls.route == "/equipment_model":
             fake_data = {
                 "id": "06646868-917e-4f4e-bdfe-0610ae592380" if search else str(component_id),
                 "reference": "28bc52f7f13e4bbf841d8729141267f3",
@@ -56,6 +59,12 @@ class RequestsBackend:
             if component_id == BACKEND_REQ_TEST_VARIABLES["attribute_supervalue"]:
                 fake_data = {"name": "ATTRsupervalue", "description": ""}
             serializer = cls.serializer(data=fake_data, many=search)
+            serializer.is_valid(raise_exception=True)
+            return serializer
+        elif cls.route == "/laboratory":
+
+            fake_data = {"name": "Laboratory" + str(component_id)}
+            serializer = cls.serializer(data=fake_data)
             serializer.is_valid(raise_exception=True)
             return serializer
 

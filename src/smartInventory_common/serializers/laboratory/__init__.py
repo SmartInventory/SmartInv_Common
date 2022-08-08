@@ -1,0 +1,1 @@
+from .laboratory import LaboratorySerializer
