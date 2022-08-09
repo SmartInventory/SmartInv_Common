@@ -33,6 +33,23 @@ spec:
     spec:
       containers:
         - image: smartinventory_inventory:preprod
+          name: inv-backend-bck
+          volumeMounts:
+            - name: inv-config-vol
+              readOnly: true
+              mountPath: "/app/smartinv_back/secret/"
+          command:
+            - "python"
+            - "manage.py"
+            - "event_handler"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+        - image: smartinventory_inventory:preprod
           name: inv-backend
           ports:
             - containerPort: 8000

@@ -33,6 +33,23 @@ spec:
     spec:
       containers:
         - image: smartinventory_backoffice:preprod
+          name: bo-backend-bck
+          volumeMounts:
+            - name: bo-config-vol
+              readOnly: true
+              mountPath: "/app/back_office_back/secret/"
+          command:
+            - "python"
+            - "manage.py"
+            - "event_handler"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/back_office_back/secret/bo_config.ini /app/back_office_back/configuration.ini
+        - image: smartinventory_backoffice:preprod
           name: bo-backend
           ports:
             - containerPort: 8000

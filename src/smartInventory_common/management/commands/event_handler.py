@@ -1,11 +1,13 @@
 import json
-import sys
 
 from django.conf import settings
 from django.core.management import BaseCommand
 from django.core.cache import cache
 
 from smartInventory_common.communication import EventsHandler, RequestsBackend
+from smartInventory_common.utils import common_logger
+
+module_logger = common_logger.getChild("ListenEvents")
 
 
 class ListenEvents(BaseCommand):
@@ -14,24 +16,25 @@ class ListenEvents(BaseCommand):
         self.queue_name = None
 
     def on_message(self, channel, method_frame, header_frame, body):
-        sys.stdout.write("Received...")
+        module_logger.info("Received...")
         data = json.loads(bytes(body).decode("UTF-8"))
-        sys.stdout.write(str(data)+"\n")
+        module_logger.info(str(data))
         channel.basic_ack(delivery_tag=method_frame.delivery_tag)
 
         if "action" in data:
             if data["action"] == "PURGE":
-                sys.stdout.write("purge cache\n")
+                module_logger.info("purge cache")
                 cache.clear()
             elif data["action"] == "SET" and "payload" in data:
                 payload = data["payload"]
                 if "id" in data and "type" in data:
-                    sys.stdout.write("set cache\n")
+                    module_logger.info("set cache")
                     cache.set(RequestsBackend.get_cache_key(data["type"], data["id"]), payload)
-                    sys.stdout.write(RequestsBackend.get_cache_key(data["type"], data["id"])+"\n")
+                    module_logger.info(RequestsBackend.get_cache_key(data["type"], data["id"]) + "")
             else:
                 if "job_id" not in data:
-                    sys.stdout.write("NO JOB ID\n")
+                    module_logger.warn("NO JOB ID")
+                    module_logger.warn(body)
                     return
                 self.on_action(data)  # Actions will be handled by the system itself
 

@@ -1,9 +1,12 @@
 import json
-import random
 import re
 import time
 import uuid
 from pika.spec import Basic
+
+from smartInventory_common.utils import common_logger
+
+module_logger = common_logger.getChild("LoRaPayload")
 
 DEVICE_ACTIONS = [
     "STA",  # Student authentication
@@ -17,11 +20,6 @@ class LoRaPayload:
     def __init__(self):
         """
             LoRaPayload class : Used to communicate with devices
-        :param device_id: Mandatory : if == 000000 broadcast, else unicast
-        :param seq: Mandatory
-        :param payload: Mandatory
-        :param action: Optional
-        :param ttl: Optional
         """
 
         self._device_id: str = ""
@@ -42,7 +40,7 @@ class LoRaPayload:
         return json.dumps(self.get_dict())
 
     def check_obj(self):
-        print(self.payload, self.action, self._seq)
+        module_logger.info(self.payload + self.action + str(self._seq))
         if not self.device_id or not self._seq or (not self.payload and not self.action):
             raise ValueError("Missing mandatory fields")
 

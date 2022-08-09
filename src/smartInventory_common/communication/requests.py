@@ -7,6 +7,10 @@ from requests import Response
 
 from rest_framework import serializers
 
+from smartInventory_common.utils import common_logger
+
+module_logger = common_logger.getChild("RequestsBackend")
+
 BACKEND_REQ_TEST_VARIABLES = {
     "model_id_not_found": "7a35a50b-bb76-432d-8c62-5b7ea1ad0af8",
     "attribute_id_not_found": "350efcc4-62a5-4c09-81cc-e5af4366c705",
@@ -79,14 +83,14 @@ class RequestsBackend:
         cache_comp = cache.get(cls.get_cache_key(cls.route, component_id))
 
         if cache_comp:
-            print("HIT¡")
+            module_logger.info("Cache : Hit!")
             serializer = cls.serializer(
                 data=cache_comp if isinstance(cache_comp, dict) else json.loads(cache_comp), many=search
             )
             serializer.is_valid(raise_exception=True)
             return serializer
 
-        print("MISS")
+        module_logger.info("Cache : Miss")
         response = cls.get(component_id, search)
         if response.status_code == 200:
             if search:
@@ -133,9 +137,9 @@ class RequestsBackend:
         :return:
         """
         if hasattr(settings, "TESTING"):
-            serializer = cls.get_test_datas(component_id, search)
+            serializer = cls.get_test_datas(str(component_id), search)
         else:
-            serializer = cls.get_cache_or_live(component_id, search)
+            serializer = cls.get_cache_or_live(str(component_id), search)
         if serializer.is_valid(raise_exception=True):
             return serializer
         raise ValueError(serializer.errors)

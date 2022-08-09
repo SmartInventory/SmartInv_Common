@@ -1,9 +1,12 @@
 import json
-import sys
 from django.conf import settings
 
 import pika
 from pika.exceptions import AMQPConnectionError
+
+from smartInventory_common.utils import common_logger
+
+module_logger = common_logger.getChild("EventHandler")
 
 
 class EventsHandler:
@@ -20,10 +23,10 @@ class EventsHandler:
         self.channel = None
 
     def init_connexion(self):
-        sys.stdout.write("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
+        module_logger.info("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
         self.connection = pika.BlockingConnection(self.parameters)
         self.channel = self.connection.channel()
-        sys.stdout.write("Success!\n")
+        module_logger.info("Success!")
 
     def send_cache_update(self, action, comp_type=None, comp_id=None, data=None):
         formatted_data = {"action": action, "id": str(comp_id), "type": comp_type, "payload": data}
@@ -31,7 +34,7 @@ class EventsHandler:
         try:
             self.send_packet(formatted_data)
         except AMQPConnectionError:
-            sys.stdout.write("error cache rabbitmq\n")
+            module_logger.error("error cache rabbitmq")
 
     def create_job(self, action, data):
         raise NotImplemented
@@ -45,7 +48,7 @@ class EventsHandler:
             return
         self.init_connexion()
         json_dump = json.dumps(data)
-        sys.stdout.write("Sending : %s\n" % json_dump)
+        module_logger.info("Sending : %s" % json_dump)
 
         self.channel.basic_publish(
             self.exchange,
@@ -62,7 +65,7 @@ class EventsHandler:
         self.channel.basic_consume(self.queue_name, callback, auto_ack=False)
 
         try:
-            sys.stdout.write("Listening for events on %s...\n" % self.queue_name)
+            module_logger.info("Listening for events on %s..." % self.queue_name)
             self.channel.start_consuming()
         except KeyboardInterrupt:
             self.channel.stop_consuming()

@@ -1,5 +1,8 @@
 from smartInventory_common.communication.couchdb import CouchDB
+from smartInventory_common.utils import common_logger
 from smartInventory_common.utils.exceptions import AttributesNotFound, CouchDBSendError
+
+module_logger = common_logger.getChild("CouchDBAttributes")
 
 
 class CouchDBAttributes(CouchDB):
@@ -24,14 +27,14 @@ class CouchDBAttributes(CouchDB):
         response, status_code = self.send_data("POST", "", formatted_attributes)
 
         if status_code != 201:
-            print("Error Couchdb : ", response)
+            module_logger.error("Error Couchdb : ", response)
             raise CouchDBSendError(detail=response)
         return response["id"]
 
     def get_document(self, document_id):
         response, status_code = self.request("GET", document_id)
         if status_code != 200:
-            print("error couchdb", response)
+            module_logger.error("error couchdb", response)
             raise AttributesNotFound(detail=response)
         return response
 
@@ -62,7 +65,7 @@ class CouchDBAttributes(CouchDB):
 
         response, status_code = self.request("DELETE", attributes_id + "?rev=" + attributes["_rev"])
         if status_code != 200 and status_code != 202:
-            print("Error Couchdb : ", response)
+            module_logger.error("Error Couchdb : ", response)
             raise CouchDBSendError(detail=response)
 
     def update_attribute(self, attributes_id, attributes):
@@ -74,7 +77,7 @@ class CouchDBAttributes(CouchDB):
         )
 
         if status_code != 201 and status_code != 202:
-            print("Error Couchdb : ", response)
+            module_logger.error("Error Couchdb : ", response)
             raise CouchDBSendError(detail=response)
 
         return response["id"]
@@ -88,7 +91,7 @@ class CouchDBAttributes(CouchDB):
         response, status_code = self.send_data("POST", "_find", search_query)
 
         if status_code != 200:
-            print("Error Couchdb : ", response)
+            module_logger.error("Error Couchdb : ", response)
             if status_code == 404:
                 return None
             raise CouchDBSendError(detail=response)
