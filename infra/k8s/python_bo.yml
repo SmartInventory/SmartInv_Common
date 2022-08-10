@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: bo-backend
+  name: bo-back
   labels:
     app: smartinventory
 spec:
@@ -9,31 +9,31 @@ spec:
     - port: 8000
   selector:
     app: smartinventory
-    tier: bo-backend
+    tier: bo-back
   clusterIP: None
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bo-backend
+  name: bo-back
   labels:
     app: smartinventory
 spec:
   selector:
     matchLabels:
       app: smartinventory
-      tier: bo-backend
+      tier: bo-back
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
         app: smartinventory
-        tier: bo-backend
+        tier: bo-back
     spec:
       containers:
         - image: smartinventory_backoffice:preprod
-          name: bo-backend-bck
+          name: bo-back-events
           volumeMounts:
             - name: bo-config-vol
               readOnly: true
@@ -50,10 +50,27 @@ spec:
                   - -c
                   - cp /app/back_office_back/secret/bo_config.ini /app/back_office_back/configuration.ini
         - image: smartinventory_backoffice:preprod
-          name: bo-backend
+          name: bo-back-keep
+          volumeMounts:
+            - name: bo-config-vol
+              readOnly: true
+              mountPath: "/app/back_office_back/secret/"
+          command:
+            - "python"
+            - "manage.py"
+            - "house_keeping"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/back_office_back/secret/bo_config.ini /app/back_office_back/configuration.ini
+        - image: smartinventory_backoffice:preprod
+          name: bo-back
           ports:
             - containerPort: 8000
-              name: bo-backend
+              name: bo-back
           volumeMounts:
             - name: bo-config-vol
               readOnly: true

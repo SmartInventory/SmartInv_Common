@@ -51,6 +51,37 @@ services:
         condition: service_started
     networks:
       - app
+  backoffice_housekeep:
+    build: ./Smart-Inventory-BO-back/
+    volumes:
+      - ./bo_configuration.ini:/app/back_office_back/configuration.ini:ro
+    environment:
+      DJANGO_SETTINGS_MODULE: "back_office_back.settings.prod"
+    entrypoint: /usr/local/bin/python
+    command:
+      - "manage.py"
+      - "house_keeping"
+    depends_on:
+      backoffice:
+        condition: service_started
+    networks:
+      - app
+
+  inventory_housekeep:
+    build: ./SmartInv_Back/
+    volumes:
+      - ./inv_configuration.ini:/app/smartinv_back/configuration.ini:ro
+    environment:
+      DJANGO_SETTINGS_MODULE: "smartinv_back.settings.prod"
+    entrypoint: /usr/local/bin/python
+    command:
+      - "manage.py"
+      - "house_keeping"
+    depends_on:
+      inventory:
+        condition: service_started
+    networks:
+      - app
 
   inventory_background:
     build: ./SmartInv_Back/

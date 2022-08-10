@@ -1,3 +1,5 @@
+import copy
+
 from smartInventory_common.communication.couchdb import CouchDB
 from smartInventory_common.utils import common_logger
 from smartInventory_common.utils.exceptions import AttributesNotFound, CouchDBSendError
@@ -70,11 +72,12 @@ class CouchDBAttributes(CouchDB):
 
     def update_attribute(self, attributes_id, attributes):
         formatted_attributes = self.format_attributes(attributes)
-        attributes = self.get_document(attributes_id)
+        self.set_attribute(attributes_id, formatted_attributes)
 
-        response, status_code = self.send_data(
-            "PUT", attributes_id + "?rev=" + attributes["_rev"], formatted_attributes
-        )
+    def set_attribute(self, attributes_id, attributes):
+        document = self.get_document(attributes_id)
+
+        response, status_code = self.send_data("PUT", attributes_id + "?rev=" + document["_rev"], attributes)
 
         if status_code != 201 and status_code != 202:
             module_logger.error("Error Couchdb : ", response)
@@ -96,3 +99,39 @@ class CouchDBAttributes(CouchDB):
                 return None
             raise CouchDBSendError(detail=response)
         return response
+
+    def update_attributes_name(self, attributes, attribute_name, attribute_new_name):
+        done = []
+        try:
+            for attribute in attributes["docs"]:
+                updated_attribute = {}
+                for key, value in attribute.items():
+                    if key == attribute_name:
+                        updated_attribute.update({attribute_new_name: value})
+                    elif key in ["_id", "_rev"]:
+                        continue
+                    else:
+                        updated_attribute.update({key: value})
+                self.set_attribute(attribute["_id"], updated_attribute)
+                done.append(attribute)
+            return len(done)
+        except Exception as e:
+            # Rollback
+            for attribute in done:
+                self.set_attribute(attribute["_id"], attribute)
+            raise e
+
+    def delete_attributes_name(self, attributes, attribute_name):
+        done = []
+        try:
+            for attribute in attributes["docs"]:
+                updated_attribute = copy.copy(attribute)
+                updated_attribute.pop(attribute_name)
+                self.set_attribute(attribute["_id"], updated_attribute)
+                done.append(attribute)
+            return len(done)
+        except Exception as e:
+            # Rollback
+            for attribute in done:
+                self.set_attribute(attribute["_id"], attribute)
+            raise e

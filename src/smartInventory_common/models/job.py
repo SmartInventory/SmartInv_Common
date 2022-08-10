@@ -21,7 +21,7 @@ class Job(models.Model):
 
     last_update = models.DateTimeField(default=timezone.now, editable=False)
 
-    logs = models.TextField(max_length=255, null=True, blank=True)
+    logs = models.TextField(max_length=512, null=True, blank=True)
 
     triggered_by = models.UUIDField(help_text="User")
 
