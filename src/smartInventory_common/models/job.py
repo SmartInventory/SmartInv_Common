@@ -23,7 +23,7 @@ class Job(models.Model):
 
     logs = models.TextField(max_length=255, null=True, blank=True)
 
-    """TODO : Add 'triggered_by'"""
+    triggered_by = models.UUIDField(help_text="User")
 
     class Meta:
         abstract = True

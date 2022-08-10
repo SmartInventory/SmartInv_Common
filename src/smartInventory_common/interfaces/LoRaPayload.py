@@ -19,7 +19,7 @@ DEVICE_ACTIONS = [
 class LoRaPayload:
     def __init__(self):
         """
-            LoRaPayload class : Used to communicate with devices
+        LoRaPayload class : Used to communicate with devices
         """
 
         self._device_id: str = ""

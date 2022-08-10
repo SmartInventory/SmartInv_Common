@@ -1,1 +1,1 @@
-from .user_roles import USER_ROLES
+from .user_roles import UserRoles

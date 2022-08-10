@@ -1,5 +1,7 @@
 import hashlib
 import json
+import uuid
+
 import requests
 from django.conf import settings
 from django.core.cache import cache
@@ -103,6 +105,16 @@ class RequestsBackend:
                 return serializer
         return cls.handle_error(response)
 
+    @staticmethod
+    def authentication():
+        value = uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex
+        return value, hashlib.sha512(str(settings.JWT_SECRET).encode("UTF-8") + str(value).encode("UTF-8")).hexdigest()
+
+    @classmethod
+    def get_headers(cls):
+        value, challenge = cls.authentication()
+        return {"Accept": "application/json", "X-AUTH-VALUE": value, "X-AUTH-CHALLENGE": challenge}
+
     @classmethod
     def get(cls, path: str, search=False):
         if search:
@@ -111,11 +123,7 @@ class RequestsBackend:
             url = cls.service_url + "/api" + cls.route + "/" + path + "/?format=json"
         else:
             url = cls.service_url + "/api" + cls.route + "/?format=json"
-        return requests.request(
-            "GET",
-            url,
-            headers={"Accept": "application/json"},
-        )
+        return requests.request("GET", url, headers=cls.get_headers())
 
     @classmethod
     def remove_cache(cls, component_id):
@@ -158,4 +166,4 @@ class RequestsBackend:
         else:
             url = cls.service_url + "/api" + cls.route + "/"
 
-        return requests.request(method, url, headers={"Accept": "application/json"}, data=data)
+        return requests.request(method, url, headers=cls.get_headers(), data=data)

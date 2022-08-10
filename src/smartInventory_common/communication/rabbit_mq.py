@@ -1,4 +1,6 @@
 import json
+import socket
+
 from django.conf import settings
 
 import pika
@@ -10,7 +12,7 @@ module_logger = common_logger.getChild("EventHandler")
 
 
 class EventsHandler:
-    def __init__(self, parameters: dict, queue_name, exchange="", virtual_host="/event_handler"):
+    def __init__(self, parameters: dict, queue_name, exchange="", virtual_host="/event_handler", job_model=None):
         credentials = pika.PlainCredentials(parameters["USERNAME"], parameters["PASSWORD"])
 
         parameters = pika.ConnectionParameters(
@@ -21,6 +23,7 @@ class EventsHandler:
         self.queue_name = queue_name
         self.connection = None
         self.channel = None
+        self.job_model = job_model
 
     def init_connexion(self):
         module_logger.info("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
@@ -36,8 +39,19 @@ class EventsHandler:
         except AMQPConnectionError:
             module_logger.error("error cache rabbitmq")
 
-    def create_job(self, action, data):
-        raise NotImplemented
+    def create_job(self, action, user_id, data):
+        if self.job_model is None:
+            raise ValueError("JobModelMissing")
+        job = self.job_model
+        job.pod_id = socket.gethostname()
+        job.job_type = action
+        job.logs = str(data)
+        job.triggered_by = user_id
+        job.save()
+
+        formatted_data = {"action": action, "user_id": str(user_id), "job_id": str(job.pk), "payload": data}
+
+        self.send_packet(formatted_data)
 
     def send_job_update(self, job_id, status, logs=None):
         formatted_data = {"action": "JOB_UPDATE", "job_id": job_id, "job_status": status, "logs": logs}
