@@ -73,6 +73,12 @@ class RequestsBackend:
             serializer = cls.serializer(data=fake_data)
             serializer.is_valid(raise_exception=True)
             return serializer
+        elif cls.route == "/user":
+
+            fake_data = {"email": "test@test.edu.co", "id": str(component_id), "code": str(uuid.uuid4()), "role": "AD"}
+            serializer = cls.serializer(data=fake_data)
+            serializer.is_valid(raise_exception=True)
+            return serializer
 
     @classmethod
     def get_cache_or_live(cls, component_id, search=False):

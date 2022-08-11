@@ -134,6 +134,12 @@ services:
     volumes:
       - couchdb_data:/opt/couchdb/data
 
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - app
 
   postgres_inv:
     image: postgres:14

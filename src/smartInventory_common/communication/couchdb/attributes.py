@@ -72,7 +72,7 @@ class CouchDBAttributes(CouchDB):
 
     def update_attribute(self, attributes_id, attributes):
         formatted_attributes = self.format_attributes(attributes)
-        self.set_attribute(attributes_id, formatted_attributes)
+        return self.set_attribute(attributes_id, formatted_attributes)
 
     def set_attribute(self, attributes_id, attributes):
         document = self.get_document(attributes_id)

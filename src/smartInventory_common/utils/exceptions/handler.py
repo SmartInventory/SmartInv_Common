@@ -8,7 +8,7 @@ def custom_exception_handler(exc, context):
     error = None
     data = None
     status_code = 512
-    if "view" in context:
+    if "view" in context and hasattr(context["view"], "basename"):
         error = f"error.{context['view'].basename}."
         if exc:
             error = error + str(type(exc).__name__).lower()
@@ -21,6 +21,12 @@ def custom_exception_handler(exc, context):
                         error = exc.detail["error"][0]
             status_code = status.HTTP_400_BAD_REQUEST
             data = str(exc)
+    else:
+        error = "error.unknown."
+
+    if len(error.split(".")) != 3:
+        if hasattr(exc, "default_code"):
+            error = error + exc.default_code
         else:
             error = error + "unknown"
 
@@ -28,9 +34,11 @@ def custom_exception_handler(exc, context):
         status_code = status.HTTP_404_NOT_FOUND
     elif isinstance(exc, PermissionDenied):
         status_code = status.HTTP_403_FORBIDDEN
-    if isinstance(exc, exceptions.APIException):
-        if isinstance(exc.detail, (list, dict)):
+    elif isinstance(exc, exceptions.APIException):
+        if hasattr(exc, "detail"):
             data = exc.detail
+    if hasattr(exc, "status_code"):
+        status_code = exc.status_code
 
     formatted_error = {"error": error or "error.system.unknown", "detail": data, "status_code": status_code}
 
