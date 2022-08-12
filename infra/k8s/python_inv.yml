@@ -35,6 +35,7 @@ spec:
     spec:
       containers:
         - image: localhost:5000/smartinventory_inventory:stable
+          imagePullPolicy: Always
           name: inv-back-bck
           volumeMounts:
             - name: inv-config-vol
@@ -52,6 +53,7 @@ spec:
                   - -c
                   - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
         - image: localhost:5000/smartinventory_inventory:stable
+          imagePullPolicy: Always
           name: inv-back-keep
           volumeMounts:
             - name: inv-config-vol
@@ -69,6 +71,7 @@ spec:
                   - -c
                   - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
         - image: localhost:5000/smartinventory_inventory:stable
+          imagePullPolicy: Always
           name: inv-back
           ports:
             - containerPort: 8000

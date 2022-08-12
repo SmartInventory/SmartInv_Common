@@ -35,7 +35,8 @@ spec:
     spec:
       containers:
         - image: localhost:5000/smartinv_bo_front:stable
+          imagePullPolicy: Always
           name: bo-front
           ports:
-            - containerPort: 8000
+            - containerPort: 80
               name: bo-front

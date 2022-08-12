@@ -35,7 +35,8 @@ spec:
     spec:
       containers:
         - image: localhost:5000/smartinv_inv_front:stable
+          imagePullPolicy: Always
           name: inv-front
           ports:
-            - containerPort: 8000
+            - containerPort: 80
               name: inv-front
