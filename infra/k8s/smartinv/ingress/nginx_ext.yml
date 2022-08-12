@@ -1,11 +1,11 @@
 kind: Ingress
 apiVersion: networking.k8s.io/v1
 metadata:
-  name: smartinvenvtory
+  name: smartinvenvtory-ext
   namespace: smartinventory
 spec:
   rules:
-    - host: in.smartinv.local
+    - host: in.smartinv.losandes.swano-lab.net
       http:
         paths:
           - path: /
@@ -36,7 +36,14 @@ spec:
                 name: bo-back
                 port:
                   number: 8000
-    - host: bo.smartinv.local
+          - path: /api/laboratory/
+            pathType: Prefix
+            backend:
+              service:
+                name: bo-back
+                port:
+                  number: 8000
+    - host: bo.smartinv.losandes.swano-lab.net
       http:
         paths:
           - path: /
