@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: rabbitmq
+  namespace: smartinventory
   labels:
     app: smartinventory
 spec:
@@ -30,10 +31,12 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
+  namespace: smartinventory
   name: rabbitmq-data-claim
   labels:
     app: smartinventory
 spec:
+  storageClassName: nfs-client
   accessModes:
     - ReadWriteOnce
   resources:
@@ -43,6 +46,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: smartinventory
   name: rabbitmq
   labels:
     app: smartinventory
@@ -60,9 +64,8 @@ spec:
         tier: rabbitmq
     spec:
       containers:
-        - image: smartinventory_rabbit_mq:latest
+        - image: localhost:5000/smartinventory_rabbit_mq:latest
           name: rabbitmq
-          imagePullPolicy: Never
           command: ["rabbitmq-server"]
           envFrom:
             - configMapRef:

@@ -1,0 +1,30 @@
+ssh_authorized_keys:
+  - github:bat553
+  - github:eloibrd
+hostname: smartinv-node01
+boot_cmd:
+  - mkdir -p /var/lib/nfs/sm
+  - rc-update add rpc.statd
+  - rc-update add nfs
+k3os:
+  data_sources:
+    - cdrom
+  modules:
+    - kvm
+    - nvme
+    - nfs
+  sysctl:
+    net.ipv6.conf.all.disable_ipv6: 1
+    net.ipv6.conf.default.disable_ipv6: 1
+  dns_nameservers:
+    - 1.1.1.1
+  ntp_servers:
+    - 0.us.pool.ntp.org
+    - 1.us.pool.ntp.org
+  token: K102410c48b2b0a12394a17b83840fd56f5a7e071c1294f36ace4e7a3817efe4f51::server:jqQo1jbAMJezNV8zbQgBM6zwC6oE2yDUNpwTX2cI8uOEkCR4sMr6RQPQSIM8nwXPfF
+  labels:
+    region: los-andes-ml3
+    project: smartinventory
+  server_url: https://157.253.205.50:6443
+  k3s_args:
+    - agent

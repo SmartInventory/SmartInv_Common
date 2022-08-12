@@ -1,0 +1,76 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: smartinvenvtory
+  namespace: smartinventory
+spec:
+  rules:
+    - host: in.smartinv.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: inv-front
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: inv-back
+                port:
+                  number: 8000
+          - path: /api/equipment_attribute/
+            pathType: Prefix
+            backend:
+              service:
+                name: bo-back
+                port:
+                  number: 8000
+          - path: /api/token/
+            pathType: Prefix
+            backend:
+              service:
+                name: bo-back
+                port:
+                  number: 8000
+    - host: bo.smartinv.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bo-front
+                port:
+                  number: 80
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: bo-back
+                port:
+                  number: 8000
+          - path: /api/equipment/
+            pathType: Prefix
+            backend:
+              service:
+                name: inv-back
+                port:
+                  number: 8000
+          - path: /api/inspection/
+            pathType: Prefix
+            backend:
+              service:
+                name: inv-back
+                port:
+                  number: 8000
+          - path: /api/inspection_comment/
+            pathType: Prefix
+            backend:
+              service:
+                name: inv-back
+                port:
+                  number: 8000

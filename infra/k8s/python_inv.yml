@@ -1,6 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
+  namespace: smartinventory
   name: inv-back
   labels:
     app: smartinventory
@@ -15,6 +16,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  namespace: smartinventory
   name: inv-back
   labels:
     app: smartinventory
@@ -32,7 +34,7 @@ spec:
         tier: inv-back
     spec:
       containers:
-        - image: smartinventory_inventory:preprod
+        - image: localhost:5000/smartinventory_inventory:stable
           name: inv-back-bck
           volumeMounts:
             - name: inv-config-vol
@@ -49,7 +51,7 @@ spec:
                   - /bin/sh
                   - -c
                   - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
-        - image: smartinventory_inventory:preprod
+        - image: localhost:5000/smartinventory_inventory:stable
           name: inv-back-keep
           volumeMounts:
             - name: inv-config-vol
@@ -66,7 +68,7 @@ spec:
                   - /bin/sh
                   - -c
                   - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
-        - image: smartinventory_inventory:preprod
+        - image: localhost:5000/smartinventory_inventory:stable
           name: inv-back
           ports:
             - containerPort: 8000

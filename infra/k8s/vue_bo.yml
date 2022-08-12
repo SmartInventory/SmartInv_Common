@@ -1,41 +1,41 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-inv
+  name: bo-front
   namespace: smartinventory
   labels:
     app: smartinventory
 spec:
   ports:
-    - port: 6379
+    - port: 80
   selector:
     app: smartinventory
-    tier: redis-inv
+    tier: bo-front
   clusterIP: None
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: smartinventory
-  name: redis-inv
+  name: bo-front
   labels:
     app: smartinventory
 spec:
   selector:
     matchLabels:
       app: smartinventory
-      tier: redis-inv
+      tier: bo-front
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
         app: smartinventory
-        tier: redis-inv
+        tier: bo-front
     spec:
       containers:
-        - image: redis:3
-          name: redis-inv
+        - image: localhost:5000/smartinv_bo_front:stable
+          name: bo-front
           ports:
-            - containerPort: 6379
-              name: redis-inv
+            - containerPort: 8000
+              name: bo-front
