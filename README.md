@@ -123,19 +123,19 @@ Recommended spec : 2Go RAM : 15Go Disk
 
 * In `infra/k8s/smartinv`
 * Deploy redis :
-  * `kubectl apply -f redis/*.yml`
+  * `kubectl apply -f redis/.`
 * Deploy databases :
-  * `kubectl apply -f databases/*.yml`
+  * `kubectl apply -f databases/.`
 * Deploy couchDB :
   * `kubectl apply -f couchdb.yml`
 * Deploy Rabbitmq :
   * `kubectl apply -f rabbitmq.yml`
 * Deploy Vue :
-  * `kubectl apply -f vue/*.yml`
+  * `kubectl apply -f vue/.`
 * Deploy Python :
-  * `kubectl apply -f python/*.yml`
+  * `kubectl apply -f python/.`
 * Deploy Ingress :
-  * `kubectl apply -f ingress/*.yml`
+  * `kubectl apply -f ingress/.`
 
 The app is accessible on `(bo|in).smartinv.local`. Make sure that these FQDN redirect to the master node ip.
 
