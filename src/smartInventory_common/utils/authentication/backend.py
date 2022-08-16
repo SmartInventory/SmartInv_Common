@@ -31,6 +31,23 @@ class ServerUser(AnonymousUser):
 
 class BackendAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
+        """
+            Check if the challenge match the value
+
+            Client :
+                value = random
+                challenge = sha512(JWT_TOKEN+value)
+                send(value, challenge)
+
+            Server :
+                value = X-AUTH-VALUE
+                challenge = X-AUTH-CHALLENGE
+                challenge_server = sha512(JWT_TOKEN+value)
+
+                return challenge == challenge_server
+        :param request:
+        :return:
+        """
         value = request.headers.get("X-AUTH-VALUE")
         challenge = request.headers.get("X-AUTH-CHALLENGE")
         if not challenge or not value or not hasattr(settings, "JWT_SECRET"):

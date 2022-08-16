@@ -10,6 +10,10 @@ module_logger = common_logger.getChild("HouseKeeping")
 
 
 class HouseKeeping(BaseCommand):
+    """
+        Job to remove staling jobs
+    """
+    
     def __init__(self, job_model):
         super(HouseKeeping, self).__init__()
         self.job_model = job_model

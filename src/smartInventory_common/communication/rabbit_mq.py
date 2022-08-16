@@ -24,7 +24,7 @@ class EventsHandler:
         self.queue_name = queue_name
         self.connection = None
         self.channel = None
-        self.job_model = job_model
+        self.job_model = job_model  # Defined by the application (Django model)
 
     def init_connexion(self):
         module_logger.info("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
@@ -92,6 +92,11 @@ class EventsHandler:
             raise e
 
     def consume(self, callback):
+        """
+        Listening for event on a queue
+        :param callback:
+        :return:
+        """
         if not self.channel:
             self.init_connexion()
 

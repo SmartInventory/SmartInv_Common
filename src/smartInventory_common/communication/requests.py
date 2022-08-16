@@ -13,6 +13,9 @@ from smartInventory_common.utils import common_logger
 
 module_logger = common_logger.getChild("RequestsBackend")
 
+"""
+    Used by tests
+"""
 BACKEND_REQ_TEST_VARIABLES = {
     "model_id_not_found": "7a35a50b-bb76-432d-8c62-5b7ea1ad0af8",
     "attribute_id_not_found": "350efcc4-62a5-4c09-81cc-e5af4366c705",
@@ -33,6 +36,12 @@ class RequestsBackend:
 
     @staticmethod
     def get_cache_key(route, component_id):
+        """
+            Create a unique key by component
+        :param route:
+        :param component_id:
+        :return:
+        """
         return hashlib.md5(str(f"{route}_{component_id}").encode("UTF-8")).hexdigest()
 
     @classmethod
@@ -84,6 +93,7 @@ class RequestsBackend:
     def get_cache_or_live(cls, component_id, search=False):
         """
         Get from cache or from backend
+        :param search:
         :param component_id:
         :return:
         """
@@ -113,16 +123,30 @@ class RequestsBackend:
 
     @staticmethod
     def authentication():
+        """
+            Create the login credentials
+        :return:
+        """
         value = uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex + uuid.uuid4().hex
         return value, hashlib.sha512(str(settings.JWT_SECRET).encode("UTF-8") + str(value).encode("UTF-8")).hexdigest()
 
     @classmethod
     def get_headers(cls):
+        """
+            Get authenticated header
+        :return:
+        """
         value, challenge = cls.authentication()
         return {"Accept": "application/json", "X-AUTH-VALUE": value, "X-AUTH-CHALLENGE": challenge}
 
     @classmethod
     def get(cls, path: str, search=False):
+        """
+            Get data from another service using the authentication header
+        :param path:
+        :param search:
+        :return:
+        """
         if search:
             url = cls.service_url + "/api" + cls.route + "/" + path
         elif path:
@@ -161,7 +185,7 @@ class RequestsBackend:
     @classmethod
     def post_data(cls, data, path=None, method="POST") -> Response:
         """
-        Send data
+        Send data to another service
         :param path:
         :param method:
         :param data:

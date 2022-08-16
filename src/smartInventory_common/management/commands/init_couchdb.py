@@ -9,6 +9,10 @@ module_logger = common_logger.getChild("InitCouchDB")
 
 
 class InitCouchDB(BaseCommand):
+    """
+        Create CouchDB database
+    """
+    
     def handle(self, *args, **options):
         django.setup()
 
