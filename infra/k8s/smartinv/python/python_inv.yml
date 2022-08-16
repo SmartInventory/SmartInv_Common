@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: smartinventory
+  name: inv-back
+  labels:
+    app: smartinventory
+spec:
+  ports:
+    - port: 8000
+  selector:
+    app: smartinventory
+    tier: inv-back
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory
+  name: inv-back
+  labels:
+    app: smartinventory
+spec:
+  selector:
+    matchLabels:
+      app: smartinventory
+      tier: inv-back
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: smartinventory
+        tier: inv-back
+    spec:
+      containers:
+        - image: localhost:5000/smartinventory_inventory:stable
+          imagePullPolicy: Always
+          name: inv-back-bck
+          volumeMounts:
+            - name: inv-config-vol
+              readOnly: true
+              mountPath: "/app/smartinv_back/secret/"
+          command:
+            - "python"
+            - "manage.py"
+            - "event_handler"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+        - image: localhost:5000/smartinventory_inventory:stable
+          imagePullPolicy: Always
+          name: inv-back-keep
+          volumeMounts:
+            - name: inv-config-vol
+              readOnly: true
+              mountPath: "/app/smartinv_back/secret/"
+          command:
+            - "python"
+            - "manage.py"
+            - "house_keeping"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+        - image: localhost:5000/smartinventory_inventory:stable
+          imagePullPolicy: Always
+          name: inv-back
+          ports:
+            - containerPort: 8000
+              name: inv-back
+          volumeMounts:
+            - name: inv-config-vol
+              readOnly: true
+              mountPath: "/app/smartinv_back/secret/"
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+      volumes:
+        - name: inv-config-vol
+          secret:
+            secretName: inv-config

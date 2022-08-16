@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: smartinventory-analytics
+  labels:
+    app: analytic
+spec:
+  ports:
+    - port: 3000
+  type: LoadBalancer
+  selector:
+    app: analytic
+    tier: grafana
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: smartinventory-analytics
+  name: grafana-data-claim
+  labels:
+    app: analytic
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory-analytics
+  name: grafana
+  labels:
+    app: analytic
+spec:
+  selector:
+    matchLabels:
+      app: analytic
+      tier: grafana
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: analytic
+        tier: grafana
+    spec:
+      containers:
+        - image: grafana/grafana-oss:latest
+          name: grafana
+          ports:
+            - containerPort: 3000
+              name: grafana
+          volumeMounts:
+            - name: grafana-data
+              mountPath: /var/lib/grafana
+      volumes:
+        - name: grafana-data
+          persistentVolumeClaim:
+            claimName: grafana-data-claim

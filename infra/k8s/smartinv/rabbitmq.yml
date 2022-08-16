@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: smartinventory
+  labels:
+    app: smartinventory
+spec:
+  type: NodePort
+  ports:
+    - name: rabbitmq
+      protocol: TCP
+      targetPort: 5672
+      port: 5672
+    - name: mqtt
+      protocol: TCP
+      targetPort: 1883
+      port: 1883
+    - name: prometheus
+      protocol: TCP
+      targetPort: 15692
+      port: 15692
+    - name: management
+      protocol: TCP
+      targetPort: 15672
+      port: 15672
+  selector:
+    app: smartinventory
+    tier: rabbitmq
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: smartinventory
+  name: rabbitmq-data-claim
+  labels:
+    app: smartinventory
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory
+  name: rabbitmq
+  labels:
+    app: smartinventory
+spec:
+  selector:
+    matchLabels:
+      app: smartinventory
+      tier: rabbitmq
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: smartinventory
+        tier: rabbitmq
+    spec:
+      containers:
+        - image: localhost:5000/smartinventory_rabbit_mq:latest
+          name: rabbitmq
+          command: ["rabbitmq-server"]
+          envFrom:
+            - configMapRef:
+                name: rabbitmq
+          ports:
+            - containerPort: 5672
+              name: rabbitmq
+            - containerPort: 1883
+              name: mqtt
+            - containerPort: 15692
+              name: prometheus
+            - containerPort: 15672
+              name: management
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+            - name: rabbitmq-config-vol
+              readOnly: true
+              mountPath: "/secret/"
+      volumes:
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-data-claim
+        - name: rabbitmq-config-vol
+          secret:
+            secretName: rabbitmq-config

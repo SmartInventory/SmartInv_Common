@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: smartinventory-analytics
+  labels:
+    app: analytic
+spec:
+  ports:
+    - port: 9090
+  type: ClusterIP
+  selector:
+    app: analytic
+    tier: prometheus
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: smartinventory-analytics
+  name: prometheus-data-claim
+  labels:
+    app: analytic
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory-analytics
+  name: prometheus
+  labels:
+    app: analytic
+spec:
+  selector:
+    matchLabels:
+      app: analytic
+      tier: prometheus
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: analytic
+        tier: prometheus
+    spec:
+      containers:
+        - image: prom/prometheus
+          name: prometheus
+          ports:
+            - containerPort: 9090
+              name: prometheus
+          volumeMounts:
+            - name: prometheus-data
+              mountPath: /prometheus
+            - name: config-volume
+              mountPath: /etc/prometheus
+      volumes:
+        - name: prometheus-data
+          persistentVolumeClaim:
+            claimName: prometheus-data-claim
+        - name: config-volume
+          configMap:
+            name: prometheus-config

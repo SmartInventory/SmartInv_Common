@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-bo
+  namespace: smartinventory
+  labels:
+    app: smartinventory
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: smartinventory
+    tier: redis-bo
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory
+  name: redis-bo
+  labels:
+    app: smartinventory
+spec:
+  selector:
+    matchLabels:
+      app: smartinventory
+      tier: redis-bo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: smartinventory
+        tier: redis-bo
+    spec:
+      containers:
+        - image: redis:3
+          name: redis-bo
+          ports:
+            - containerPort: 6379
+              name: redis-bo

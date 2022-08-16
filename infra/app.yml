@@ -1,0 +1,217 @@
+version: "3.9"  # optional since v1.27.0
+services:
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./app_nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - app
+    depends_on:
+      - backoffice
+      - inventory
+
+  redis_bo:
+    image: redis:7
+    networks:
+      - app
+
+  backoffice:
+    build: ./Smart-Inventory-BO-back/
+    ports:
+      - "8005:8000"
+    volumes:
+      - ./bo_configuration.ini:/app/back_office_back/configuration.ini:ro
+    depends_on:
+      postgres_bo:
+        condition: service_healthy
+      couchdb:
+        condition: service_started
+      rabbit_mq:
+        condition: service_started
+      redis_bo:
+        condition: service_started
+    networks:
+      - app
+
+  backoffice_background:
+    build: ./Smart-Inventory-BO-back/
+    volumes:
+      - ./bo_configuration.ini:/app/back_office_back/configuration.ini:ro
+    environment:
+      DJANGO_SETTINGS_MODULE: "back_office_back.settings.prod"
+    entrypoint: /usr/local/bin/python
+    command:
+      - "manage.py"
+      - "event_handler"
+    depends_on:
+      backoffice:
+        condition: service_started
+    networks:
+      - app
+  backoffice_housekeep:
+    build: ./Smart-Inventory-BO-back/
+    volumes:
+      - ./bo_configuration.ini:/app/back_office_back/configuration.ini:ro
+    environment:
+      DJANGO_SETTINGS_MODULE: "back_office_back.settings.prod"
+    entrypoint: /usr/local/bin/python
+    command:
+      - "manage.py"
+      - "house_keeping"
+    depends_on:
+      backoffice:
+        condition: service_started
+    networks:
+      - app
+
+  inventory_housekeep:
+    build: ./SmartInv_Back/
+    volumes:
+      - ./inv_configuration.ini:/app/smartinv_back/configuration.ini:ro
+    environment:
+      DJANGO_SETTINGS_MODULE: "smartinv_back.settings.prod"
+    entrypoint: /usr/local/bin/python
+    command:
+      - "manage.py"
+      - "house_keeping"
+    depends_on:
+      inventory:
+        condition: service_started
+    networks:
+      - app
+
+  inventory_background:
+    build: ./SmartInv_Back/
+    volumes:
+      - ./inv_configuration.ini:/app/smartinv_back/configuration.ini:ro
+    environment:
+      DJANGO_SETTINGS_MODULE: "smartinv_back.settings.prod"
+    entrypoint: /usr/local/bin/python
+    command:
+      - "manage.py"
+      - "event_handler"
+    depends_on:
+      inventory:
+        condition: service_started
+    networks:
+      - app
+
+  redis_inv:
+    image: redis:7
+    networks:
+      - app
+
+  inventory:
+    build: ./SmartInv_Back/
+    ports:
+      - "8006:8000"
+    volumes:
+      - ./inv_configuration.ini:/app/smartinv_back/configuration.ini:ro
+    depends_on:
+      postgres_inv:
+        condition: service_healthy
+      couchdb:
+        condition: service_started
+      rabbit_mq:
+        condition: service_started
+      redis_inv:
+        condition: service_started
+    networks:
+      - app
+
+  couchdb:
+    image: couchdb:3
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD:
+      COUCHDB_SECRET:
+    networks:
+      - app
+      - analytics
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+
+  adminer:
+    image: adminer
+    ports:
+      - "8081:8080"
+    networks:
+      - app
+
+  postgres_inv:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD:
+      POSTGRES_USER: inventory_user
+      POSTGRES_DB: inventory
+    volumes:
+      - inventory_psql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+
+  postgres_bo:
+    image: postgres:14
+    environment:
+      POSTGRES_PASSWORD:
+      POSTGRES_USER: backoffice_user
+      POSTGRES_DB: backoffice
+    volumes:
+      - backoffice_psql:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app
+
+  rabbit_mq:
+    build: ./SmartInv_EventHandler/rabbit_mq
+    ports:
+      - "8080:15672"
+      - "5672:5672"
+      - "1883:1883"
+      - "15692:15692"
+    volumes:
+      - mqdata:/var/lib/rabbitmq:rw
+      - mqconf:/etc/rabbitmq:rw
+      - ./SmartInv_EventHandler/rabbit_mq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    networks:
+      - app
+      - analytics
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  eventhandler:
+    build: ./SmartInv_EventHandler/EventHandler
+    depends_on:
+      rabbit_mq:
+        condition: service_healthy
+    volumes:
+      - ./event_configuration.ini:/app/configuration.ini:ro
+    networks:
+      - app
+      - analytics
+
+networks:
+  app: {}
+  analytics: {}
+
+volumes:
+  backoffice_psql: {}
+  inventory_psql: {}
+  mqdata: {}
+  mqconf: {}
+  couchdb_data: {}

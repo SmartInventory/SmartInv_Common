@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: smartinventory-analytics
+  labels:
+    app: analytic
+spec:
+  ports:
+    - port: 8086
+  selector:
+    app: analytic
+    tier: influxdb
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: smartinventory-analytics
+  name: influxdb-data-claim
+  labels:
+    app: analytic
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory-analytics
+  name: influxdb
+  labels:
+    app: analytic
+spec:
+  selector:
+    matchLabels:
+      app: analytic
+      tier: influxdb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: analytic
+        tier: influxdb
+    spec:
+      containers:
+        - image: influxdb:1.8-alpine
+          name: influxdb
+          env:
+            - name: DOCKER_INFLUXDB_INIT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-secret
+                  key: DOCKER_INFLUXDB_INIT_USERNAME
+                  optional: false
+            - name: DOCKER_INFLUXDB_INIT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-secret
+                  key:  DOCKER_INFLUXDB_INIT_PASSWORD
+                  optional: false
+            - name: DOCKER_INFLUXDB_INIT_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: influxdb-secret
+                  key:  DOCKER_INFLUXDB_INIT_BUCKET
+                  optional: false
+            - name: DOCKER_INFLUXDB_INIT_ORG
+              value: "smartinventory"
+          ports:
+            - containerPort: 8086
+              name: influxdb
+          volumeMounts:
+            - name: influxdb-data
+              mountPath: /var/lib/influxdb
+            - name: config-volume
+              mountPath: /etc/influxdb
+      volumes:
+        - name: influxdb-data
+          persistentVolumeClaim:
+            claimName: influxdb-data-claim
+        - name: config-volume
+          configMap:
+            name: influxdb-config
