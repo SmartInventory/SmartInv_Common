@@ -119,6 +119,8 @@ class RequestsBackend:
             if serializer.is_valid():
                 cache.set(cls.get_cache_key(cls.route, component_id), json.dumps(serializer.data))
                 return serializer
+            else:
+                module_logger.error("Serializer error" + str(serializer.errors))
         return cls.handle_error(response)
 
     @staticmethod

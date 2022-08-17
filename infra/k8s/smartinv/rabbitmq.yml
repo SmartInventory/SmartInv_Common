@@ -6,7 +6,7 @@ metadata:
   labels:
     app: smartinventory
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - name: rabbitmq
       protocol: TCP

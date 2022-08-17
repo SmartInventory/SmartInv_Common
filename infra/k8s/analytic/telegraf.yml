@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: smartinventory-analytics
+  name: telegraf
+  labels:
+    app: analytic
+spec:
+  selector:
+    matchLabels:
+      app: analytic
+      tier: telegraf
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: analytic
+        tier: telegraf
+    spec:
+      containers:
+        - image: telegraf:1.21-alpine
+          name: telegraf
+          env:
+            - name: INFLUX_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-secret
+                  key: INFLUX_PASSWORD
+                  optional: false
+            - name: INFLUX_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-secret
+                  key: INFLUX_USERNAME
+                  optional: false
+            - name: AMQP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-secret
+                  key: AMQP_USERNAME
+                  optional: false
+            - name: AMQP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-secret
+                  key: AMQP_PASSWORD
+                  optional: false
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/telegraf
+      volumes:
+        - name: config-volume
+          configMap:
+            name: telegraf-config

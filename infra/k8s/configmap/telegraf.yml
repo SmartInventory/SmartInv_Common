@@ -1,0 +1,30 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: telegraf-config
+  namespace: smartinventory-analytics
+data:
+  telegraf.conf: |
+    [global_tags]
+      user = "${INFLUX_USERNAME}"
+  
+    [[outputs.influxdb]]
+      urls = ["http://influxdb:8086"]
+      skip_database_creation = false
+      password = "${INFLUX_PASSWORD}"
+      username = "${INFLUX_USERNAME}"
+      database = "smartinventory"
+    [[inputs.amqp_consumer]]
+      ## Brokers to consume from.  If multiple brokers are specified a random broker
+      ## will be selected anytime a connection is established.  This can be
+      ## helpful for load balancing when not using a dedicated load balancer.
+      brokers = ["amqp://rabbitmq.smartinventory.svc.cluster.local:5672//metrics"]
+      ## Authentication credentials for the PLAIN auth_method.
+      username = "${AMQP_USERNAME}"
+      password = "${AMQP_PASSWORD}"
+      ## Name of the exchange to declare.  If unset, no exchange will be declared.
+      # exchange = "telegraf"
+      queue = "smartinv_metrics"
+      ## AMQP queue durability can be "transient" or "durable".
+      queue_durability = "durable"
+      data_format = "influx"

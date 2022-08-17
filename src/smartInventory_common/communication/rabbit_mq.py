@@ -13,7 +13,7 @@ module_logger = common_logger.getChild("EventHandler")
 
 
 class EventsHandler:
-    def __init__(self, parameters: dict, queue_name, exchange="", virtual_host="/event_handler", job_model=None):
+    def __init__(self, parameters: dict, queue_name, exchange="", virtual_host="/event_handler", job_model=None, measurement=None):
         credentials = pika.PlainCredentials(parameters["USERNAME"], parameters["PASSWORD"])
 
         parameters = pika.ConnectionParameters(
@@ -25,6 +25,7 @@ class EventsHandler:
         self.connection = None
         self.channel = None
         self.job_model = job_model  # Defined by the application (Django model)
+        self.measurement = measurement
 
     def init_connexion(self):
         module_logger.info("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
@@ -36,9 +37,28 @@ class EventsHandler:
         formatted_data = {"action": action, "id": str(comp_id), "type": comp_type, "payload": data}
 
         try:
-            self.send_packet(formatted_data)
+            self.format_send_packet(formatted_data)
         except AMQPConnectionError:
             module_logger.error("error cache rabbitmq")
+
+    def send_metrics(self, request, response):
+        if not self.measurement:
+            raise NotImplementedError
+        user = "unknown"
+        action = "unknown"
+        if hasattr(request, "user"):
+            user = str(request.user.id or "unknown")
+
+        if hasattr(response, "renderer_context") and "view" in response.renderer_context and hasattr(
+                response.renderer_context["view"], "action"):
+            action = response.renderer_context["view"].action
+
+        formatted_data = f'{self.measurement},action="{action}",user="{user}",status_code="{response.status_code}" status_code="{response.status_code}",action="{action}",url="{request.build_absolute_uri()}",user="{user}"'
+        try:
+            self.send_packet(formatted_data)
+        except AMQPConnectionError as e:
+            module_logger.error("error metrics rabbitmq")
+            module_logger.error(e.args)
 
     def create_job(self, action, user_id, data):
         if self.job_model is None:
@@ -58,24 +78,28 @@ class EventsHandler:
             "payload": data,
         }
 
-        self.send_packet(formatted_data)
+        self.format_send_packet(formatted_data)
         return serializer.data
 
     def send_job_update(self, job_id, status, logs=None):
         formatted_data = {"action": "JOB_UPDATE", "job_id": job_id, "job_status": status, "logs": logs}
-        self.send_packet(formatted_data)
+        self.format_send_packet(formatted_data)
 
-    def send_packet(self, data: dict):
+    def format_send_packet(self, data: dict):
+        json_dump = json.dumps(data)
+        self.send_packet(json_dump)
+        return data
+
+    def send_packet(self, data: str):
         if hasattr(settings, "TESTING"):
             return
         if not self.channel:
             self.init_connexion()
-        json_dump = json.dumps(data)
         module_logger.info(
             "Sending on %s : %s"
             % (
                 self.queue_name,
-                json_dump,
+                data,
             )
         )
 
@@ -83,10 +107,9 @@ class EventsHandler:
             self.channel.basic_publish(
                 self.exchange,
                 self.queue_name,
-                json_dump.encode("UTF-8"),
+                data.encode("UTF-8"),
                 pika.BasicProperties(content_type="application/json"),
             )
-            return data
         except StreamLostError as e:
             self.init_connexion()
             raise e
