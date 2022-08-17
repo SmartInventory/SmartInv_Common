@@ -13,7 +13,7 @@ module_logger = common_logger.getChild("EventHandler")
 
 
 class EventsHandler:
-    def __init__(self, parameters: dict, queue_name, exchange="", virtual_host="/event_handler", job_model=None, measurement=None):
+    def __init__(self, parameters: dict, queue_name, exchange="", virtual_host="/event_handler", job_model=None, app=None):
         credentials = pika.PlainCredentials(parameters["USERNAME"], parameters["PASSWORD"])
 
         parameters = pika.ConnectionParameters(
@@ -25,7 +25,7 @@ class EventsHandler:
         self.connection = None
         self.channel = None
         self.job_model = job_model  # Defined by the application (Django model)
-        self.measurement = measurement
+        self.app = app
 
     def init_connexion(self):
         module_logger.info("Init connexion to RabbitMQ queue : %s..." % self.queue_name)
@@ -42,7 +42,7 @@ class EventsHandler:
             module_logger.error("error cache rabbitmq")
 
     def send_metrics(self, request, response):
-        if not self.measurement:
+        if not self.app:
             raise NotImplementedError
         user = "unknown"
         action = "unknown"
@@ -53,7 +53,7 @@ class EventsHandler:
                 response.renderer_context["view"], "action"):
             action = response.renderer_context["view"].action
 
-        formatted_data = f'{self.measurement},action="{action}",user="{user}",status_code="{response.status_code}" status_code="{response.status_code}",action="{action}",url="{request.build_absolute_uri()}",user="{user}"'
+        formatted_data = f'metrics,app={self.app},action="{action}",user="{user}",status_code="{response.status_code}" app={self.app},status_code="{response.status_code}",action="{action}",url="{request.build_absolute_uri()}",user="{user}"'
         try:
             self.send_packet(formatted_data)
         except AMQPConnectionError as e:
