@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "smartInventory_common"
-version = "0.0.2.dev1"
+version = "0.0.2.dev3"
 authors = [
     { name="Baptiste PELLARIN", email="b.pellarin@uniandes.edu.co" },
     { name="Eloi BERNARD", email="e.bernard@uniandes.edu.co" },
