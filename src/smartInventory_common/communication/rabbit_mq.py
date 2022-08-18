@@ -53,7 +53,7 @@ class EventsHandler:
                 response.renderer_context["view"], "action"):
             action = response.renderer_context["view"].action
 
-        formatted_data = f'metrics,app="{self.app}",action="{action}",user="{user}",status_code="{response.status_code}" app="{self.app}",status_code="{response.status_code}",action="{action}",url="{request.build_absolute_uri()}",user="{user}"'
+        formatted_data = f'metrics,app="{self.app}",action="{action}",user="{user}",status_code={response.status_code} app="{self.app}",status_code={response.status_code},action="{action}",url="{request.build_absolute_uri()}",user="{user}"'
         try:
             self.send_packet(formatted_data)
         except AMQPConnectionError as e:
