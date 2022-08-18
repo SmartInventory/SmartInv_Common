@@ -33,7 +33,7 @@ In the master file change the `token` section with another random string
 
 #### Master Node
 
-Recommended spec : 4Go RAM : 15Go Disk
+Recommended spec : 4Go RAM : 10Go Disk
 
 * Boot on the ISO and select "Install"
 * When asked to use `cloud-init` say yes and enter the url to the master file (careful, it's in QWERTY).
@@ -46,11 +46,12 @@ Recommended spec : 4Go RAM : 15Go Disk
 
 #### Worker nodes
 
-Recommended spec : 2Go RAM : 15Go Disk
+Recommended spec : 2Go RAM : 10Go Disk
 
 * Create node01 and node02 
 * Boot on the ISO and select "Install"
 * When asked to use `cloud-init` say yes and enter the url to the node file (careful, it's in QWERTY).
+* Tag the nodes as workers `kubectl label node {{node_id}} node-role.kubernetes.io/worker=worker`
 * The nodes are configured
 
 

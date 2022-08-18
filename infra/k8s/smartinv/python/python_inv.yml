@@ -13,6 +13,54 @@ spec:
     tier: inv-back
   clusterIP: None
 ---
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: smartinventory
+  name: inv-background
+spec:
+  containers:
+    - name: inv-back-events
+      image: localhost:5000/smartinventory_inventory:stable
+      imagePullPolicy: Always
+      volumeMounts:
+        - name: inv-config-vol
+          readOnly: true
+          mountPath: "/app/smartinv_back/secret/"
+      command:
+        - "python"
+        - "manage.py"
+        - "event_handler"
+      lifecycle:
+        postStart:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+    - name: inv-back-keep
+      image: localhost:5000/smartinventory_inventory:stable
+      imagePullPolicy: Always
+      volumeMounts:
+        - name: inv-config-vol
+          readOnly: true
+          mountPath: "/app/smartinv_back/secret/"
+      command:
+        - "python"
+        - "manage.py"
+        - "house_keeping"
+      lifecycle:
+        postStart:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
+  volumes:
+    - name: inv-config-vol
+      secret:
+        secretName: inv-config
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -34,42 +82,6 @@ spec:
         tier: inv-back
     spec:
       containers:
-        - image: localhost:5000/smartinventory_inventory:stable
-          imagePullPolicy: Always
-          name: inv-back-bck
-          volumeMounts:
-            - name: inv-config-vol
-              readOnly: true
-              mountPath: "/app/smartinv_back/secret/"
-          command:
-            - "python"
-            - "manage.py"
-            - "event_handler"
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
-        - image: localhost:5000/smartinventory_inventory:stable
-          imagePullPolicy: Always
-          name: inv-back-keep
-          volumeMounts:
-            - name: inv-config-vol
-              readOnly: true
-              mountPath: "/app/smartinv_back/secret/"
-          command:
-            - "python"
-            - "manage.py"
-            - "house_keeping"
-          lifecycle:
-            postStart:
-              exec:
-                command:
-                  - /bin/sh
-                  - -c
-                  - cp /app/smartinv_back/secret/inv_config.ini /app/smartinv_back/configuration.ini
         - image: localhost:5000/smartinventory_inventory:stable
           imagePullPolicy: Always
           name: inv-back

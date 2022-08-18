@@ -13,29 +13,18 @@ spec:
     tier: redis-bo
   clusterIP: None
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   namespace: smartinventory
   name: redis-bo
   labels:
     app: smartinventory
+    tier: redis-bo
 spec:
-  selector:
-    matchLabels:
-      app: smartinventory
-      tier: redis-bo
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: smartinventory
-        tier: redis-bo
-    spec:
-      containers:
-        - image: redis:3
+  containers:
+    - image: redis:3
+      name: redis-bo
+      ports:
+        - containerPort: 6379
           name: redis-bo
-          ports:
-            - containerPort: 6379
-              name: redis-bo

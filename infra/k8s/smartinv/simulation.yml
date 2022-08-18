@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: smartinventory
+  name: simulation
+  labels:
+    app: smartinventory
+spec:
+  containers:
+    - image: localhost:5000/smartinventory_simulation:stable
+      imagePullPolicy: Always
+      name: simulation
+      env:
+        - name: ADMIN_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: simu-conf
+              key: ADMIN_EMAIL
+              optional: false
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: simu-conf
+              key: ADMIN_PASSWORD
+              optional: false
+        - name: BO_URL
+          valueFrom:
+            secretKeyRef:
+              name: simu-conf
+              key: BO_URL
+              optional: false
+        - name: INV_URL
+          valueFrom:
+            secretKeyRef:
+              name: simu-conf
+              key: INV_URL
+              optional: false
+        - name: NBR_WORKERS
+          valueFrom:
+            secretKeyRef:
+              name: simu-conf
+              key: NBR_WORKERS
+              optional: false

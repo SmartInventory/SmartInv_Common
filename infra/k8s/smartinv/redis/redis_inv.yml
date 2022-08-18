@@ -13,29 +13,18 @@ spec:
     tier: redis-inv
   clusterIP: None
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   namespace: smartinventory
   name: redis-inv
   labels:
     app: smartinventory
+    tier: redis-inv
 spec:
-  selector:
-    matchLabels:
-      app: smartinventory
-      tier: redis-inv
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: smartinventory
-        tier: redis-inv
-    spec:
-      containers:
-        - image: redis:3
+  containers:
+    - image: redis:3
+      name: redis-inv
+      ports:
+        - containerPort: 6379
           name: redis-inv
-          ports:
-            - containerPort: 6379
-              name: redis-inv

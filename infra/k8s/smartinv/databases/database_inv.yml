@@ -28,55 +28,44 @@ spec:
     requests:
       storage: 5Gi
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Pod
 metadata:
   name: inventory-psql
   namespace: smartinventory
   labels:
     app: smartinventory
+    tier: inventory-psql
 spec:
-  selector:
-    matchLabels:
-      app: smartinventory
-      tier: inventory-psql
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: smartinventory
-        tier: inventory-psql
-    spec:
-      containers:
-        - image: postgres:14
-          name: inventory-psql
-          env:
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-conf-inv
-                  key: POSTGRES_PASSWORD
-                  optional: false
-            - name: POSTGRES_USER
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-conf-inv
-                  key: POSTGRES_USER
-                  optional: false
-            - name: POSTGRES_DB
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-conf-inv
-                  key: POSTGRES_DB
-                  optional: false
-          ports:
-            - containerPort: 5432
-              name: inventory-psql
-          volumeMounts:
-            - name: postgres-inv-data
-              mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: postgres-inv-data
-          persistentVolumeClaim:
-            claimName: postgres-inv-data-claim
+    containers:
+      - image: postgres:14
+        name: inventory-psql
+        env:
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-conf-inv
+                key: POSTGRES_PASSWORD
+                optional: false
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: postgres-conf-inv
+                key: POSTGRES_USER
+                optional: false
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: postgres-conf-inv
+                key: POSTGRES_DB
+                optional: false
+        ports:
+          - containerPort: 5432
+            name: inventory-psql
+        volumeMounts:
+          - name: postgres-inv-data
+            mountPath: /var/lib/postgresql/data
+    volumes:
+      - name: postgres-inv-data
+        persistentVolumeClaim:
+          claimName: postgres-inv-data-claim
